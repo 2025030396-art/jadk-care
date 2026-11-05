@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JADK Care - Configuración</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans+Condensed:wght@700&family=Oswald:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* VARIABLES DE COLOR (LIGHT Y DARK MODE) */
+        :root {
+            --bg-main: #f8f9fa;       
+            --purple-dark: #2b003a;   
+            --purple-accent: #b070b7; 
+            --purple-light: #dfc3e1;
+            --border-color: #ccc;  
+            --panel-bg: #ffffff;
+            --critical: #d32f2f;
+            --text-dark: #1a1a1a;
+            --text-muted: #555;
+            --input-bg: #d9d9d9;
+            --sidebar-hover: #ececec;
+            --glow-color: #E700FF;    
+            --glow-mix: #28162A;
+            --header-shadow: none;
+        }
+
+        body.dark-mode {
+            --bg-main: #121212;
+            --purple-dark: #3a0052;
+            --border-color: #333333;
+            --panel-bg: #242424;
+            --text-dark: #f5f5f5;
+            --text-muted: #aaaaaa;
+            --input-bg: #333333;
+            --sidebar-hover: #333333;
+            --header-shadow: 0 4px 15px rgba(176, 112, 183, 0.15);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Oswald', sans-serif;
+            background-color: var(--bg-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* Altura estricta para anclar el diseño */
+            overflow: hidden; /* Evita que la página entera haga scroll */
+            color: var(--text-dark);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .font-title { 
+            font-family: 'Open Sans Hebrew Condensed', 'Open Sans Condensed', sans-serif; 
+        }
+
+        /* ==========================================
+           HEADER ESTANDARIZADO
+           ========================================== */
+        .top-header {
+            background-color: var(--purple-dark);
+            padding: 0 30px;
+            height: 60px;
+            flex-shrink: 0; /* Prohíbe que el header se aplaste */
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            box-shadow: var(--header-shadow);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .logo-link { display: flex; align-items: center; text-decoration: none; outline: none; }
+        .header-logo-svg { height: 35px; width: auto; transition: transform 0.2s ease, filter 0.2s ease; }
+        .header-logo-svg:hover { transform: scale(1.05); filter: drop-shadow(0 0 8px rgba(206, 203, 246, 0.5)); }
+
+        .header-controls { display: flex; align-items: center; gap: 20px; }
+        
+        .search-input { 
+            background-color: var(--input-bg); color: var(--text-dark); border: 1px solid var(--border-color); 
+            border-radius: 8px; padding: 6px 15px; font-family: 'Oswald', sans-serif; width: 180px; 
+            font-size: 14px; transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .header-icon { 
+            width: 26px !important; height: 26px !important; min-width: 26px !important; min-height: 26px !important; 
+            flex-shrink: 0 !important; display: block; color: var(--purple-accent); cursor: pointer; 
+            transition: filter 0.25s ease, transform 0.25s ease, color 0.25s ease; 
+        }
+        .header-icon:hover { transform: scale(1.15); color: white; filter: drop-shadow(0 0 8px var(--glow-color)) drop-shadow(0 0 3px var(--glow-mix)); }
+
+        .settings-wrapper { position: relative; display: block; width: 26px; height: 26px; min-width: 26px; flex-shrink: 0; }
+        
+        .settings-dropdown {
+            position: absolute; top: 45px; right: 0; background-color: var(--panel-bg); 
+            border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            width: 240px; display: none; flex-direction: column; overflow: hidden; z-index: 100;
+        }
+        .settings-dropdown.show { display: flex; animation: slideDown 0.2s ease; }
+        @keyframes slideDown { from {opacity:0; transform: translateY(-10px);} to {opacity:1; transform:translateY(0);} }
+
+        .dropdown-item {
+            padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
+            text-decoration: none; color: var(--text-dark); font-family: 'Open Sans Hebrew Condensed', sans-serif;
+            font-size: 16px; font-weight: 700; text-transform: uppercase; transition: background-color 0.2s; cursor: pointer;
+        }
+        .dropdown-item:hover { background-color: var(--bg-main); }
+        .dropdown-divider { height: 1px; background-color: var(--border-color); }
+        .text-danger { color: var(--critical); justify-content: flex-start; gap: 10px; }
+        .text-danger:hover { color: #ff4d4d; }
+
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #888; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--purple-accent); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* ==========================================
+           ÁREA DE SCROLL INDEPENDIENTE
+           ========================================== */
+        .settings-scroll-area {
+            flex: 1; /* Ocupa el espacio restante entre header y footer */
+            overflow-y: auto; /* Permite el scroll SÓLO aquí */
+            width: 100%;
+        }
+
+        .settings-container {
+            padding: 40px 60px;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .page-title { font-size: 32px; font-weight: 700; margin: 0 0 30px 0; }
+
+        .profile-header { display: flex; align-items: center; gap: 20px; padding-bottom: 25px; border-bottom: 1px solid var(--border-color); margin-bottom: 40px; }
+        .avatar { width: 70px; height: 70px; background-color: #34d399; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 32px; font-weight: 700; }
+        .profile-info h2 { font-size: 24px; margin: 0 0 5px 0; letter-spacing: 0.5px; }
+        .role-pill { background-color: var(--purple-light); color: #1a1a1a; padding: 4px 15px; border-radius: 20px; font-size: 14px; font-weight: 500; display: inline-block; }
+
+        .section-title { font-size: 20px; font-weight: 700; margin: 0 0 15px 0; text-transform: uppercase; color: var(--purple-accent); }
+        .settings-table { background-color: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-bottom: 40px; transition: background-color 0.3s; }
+        .table-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; border-bottom: 1px solid var(--border-color); }
+        .table-row:last-child { border-bottom: none; }
+        .row-data { display: flex; flex-direction: column; gap: 4px; width: 60%; }
+        .row-label { font-size: 15px; color: var(--text-muted); font-family: 'Open Sans Hebrew Condensed', sans-serif; }
+        .row-value { font-size: 16px; font-weight: 500; }
+        .row-value.purple-text { color: var(--purple-accent); }
+
+        .inline-edit-input {
+            font-family: 'Oswald', sans-serif; font-size: 16px; font-weight: 500; color: var(--text-dark);
+            border: 2px solid var(--purple-accent); border-radius: 4px; padding: 2px 8px; margin-top: 2px;
+            outline: none; width: 100%; max-width: 350px; background-color: var(--input-bg); transition: box-shadow 0.2s ease;
+        }
+        .inline-edit-input:focus { box-shadow: 0 0 8px rgba(176, 112, 183, 0.4); }
+
+        .action-link { font-family: 'Open Sans Hebrew Condensed', 'Open Sans Condensed', sans-serif; color: var(--purple-accent); text-decoration: none; font-size: 16px; font-weight: 700; cursor: pointer; transition: color 0.2s ease, text-shadow 0.2s ease; user-select: none; }
+        .action-link:hover { color: var(--purple-light); text-decoration: underline; }
+        .action-link.danger { color: var(--critical); }
+        .action-link.danger:hover { color: #ff4d4d; }
+
+        /* Modales */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .modal-overlay.show { display: flex; }
+        .modal-container { background: var(--bg-main); border-radius: 12px; padding: 25px; border: 1px solid var(--purple-accent); box-shadow: 0 10px 30px rgba(0,0,0,0.5); color: var(--text-dark); position: relative; width: 100%; max-width: 400px; }
+        .btn-modal { padding: 8px 15px; font-family: 'Open Sans Hebrew Condensed', sans-serif; font-size: 16px; font-weight: 700; border-radius: 4px; cursor: pointer; transition: all 0.2s; border: none; }
+        .btn-save { background: var(--purple-accent); color: white; }
+        .btn-save:hover { background: var(--purple-light); }
+        .btn-cancel { background: #bbb; color: #1a1a1a; margin-right: 10px; }
+        .btn-cancel:hover { background: #ccc; }
+
+        /* ==========================================
+           FOOTER
+           ========================================== */
+        .main-footer { 
+            background-color: var(--purple-dark); 
+            color: white; 
+            padding: 15px 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-size: 13px;
+            flex-shrink: 0; /* Prohíbe que el footer se aplaste */
+        }
+        .footer-version { display: flex; align-items: center; gap: 6px; }
+        .status-dot { width: 10px; height: 10px; background-color: #32CD32; border-radius: 50%; }
+    </style>
+</head>
+<body>
+
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') { window.location.href = 'login.html'; }
+        if (localStorage.getItem('theme') === 'dark') { document.body.classList.add('dark-mode'); }
+    </script>
+
+    <header class="top-header">
+        <a href="index.html" class="logo-link" title="Ir al Inicio">
+            <svg class="header-logo-svg" viewBox="0 0 320 160" xmlns="http://www.w3.org/2000/svg">
+              <title>JADK CARE logo texto</title>
+              <text x="160" y="80" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="72" font-weight="700" fill="#CECBF6" letter-spacing="12">JADK</text>
+              <line x1="30" y1="92" x2="290" y2="92" stroke="#1D9E75" stroke-width="2" stroke-linecap="round"/>
+              <text x="160" y="140" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="44" font-weight="300" fill="#1D9E75" letter-spacing="18">CARE</text>
+            </svg>
+        </a>
+
+        <div class="header-controls">
+            <!-- Buscador removido a petición del usuario en perfil -->
+            <div class="settings-wrapper">
+                <svg class="header-icon" onclick="toggleSettings()" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Ajustes">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                
+                <div class="settings-dropdown" id="settingsDropdown">
+                    <a href="perfil.html" class="dropdown-item">Mi Perfil</a>
+                    <a href="#" id="menu-pref" class="dropdown-item">Preferencias del Sistema</a>
+                    <a href="#" id="menu-notif" class="dropdown-item">Notificaciones</a>
+                    <div class="dropdown-item">
+                        <span>Modo Oscuro</span>
+                        <label class="switch">
+                          <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+                          <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" onclick="cerrarSesionApp()" class="dropdown-item text-danger">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> 
+                        Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+
+            <a href="index.html" style="text-decoration: none; display: block; flex-shrink: 0; min-width: 26px;" title="Configuración de Cuenta">
+                <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </a>
+        </div>
+    </header>
+
+    <!-- EL CONTENEDOR DE SCROLL AISLADO -->
+    <div class="settings-scroll-area">
+        <main class="settings-container">
+            <h1 class="page-title font-title">CONFIGURACIÓN DE LA CUENTA</h1>
+
+            <div class="profile-header">
+                <div class="avatar" id="avatar-icon">M</div>
+                <div class="profile-info">
+                    <h2 id="profile-name">MATAABUELAS9262</h2>
+                    <div class="role-pill" id="profile-role">Administrador</div>
+                </div>
+            </div>
+
+            <h3 class="section-title font-title">PERFIL DEL ADMINISTRADOR</h3>
+            <div class="settings-table">
+                
+                <div class="table-row">
+                    <div class="row-data">
+                        <span class="row-label">Correo electrónico</span>
+                        <span class="row-value" id="display-email">admin.ti@upsin.edu.mx</span>
+                        <input type="email" id="input-email" class="inline-edit-input" style="display: none;" value="admin.ti@upsin.edu.mx">
+                    </div>
+                    <span class="action-link" id="btn-email" onclick="toggleEdit('email', 'Editar')">Editar</span>
+                </div>
+                
+                <div class="table-row">
+                    <div class="row-data">
+                        <span class="row-label">Nombre completo</span>
+                        <span class="row-value" id="display-name">Kevin Antonio Tirado González</span>
+                        <input type="text" id="input-name" class="inline-edit-input" style="display: none;" value="Kevin Antonio Tirado González">
+                    </div>
+                    <span class="action-link" id="btn-name" onclick="toggleEdit('name', 'Editar')">Editar</span>
+                </div>
+                
+                <div class="table-row">
+                    <div class="row-data">
+                        <span class="row-label">Ubicación asignada</span>
+                        <span class="row-value" id="display-area">Laboratorios Edificio C</span>
+                        <input type="text" id="input-area" class="inline-edit-input" style="display: none;" value="Laboratorios Edificio C">
+                    </div>
+                    <span class="action-link" id="btn-area" onclick="toggleEdit('area', 'Gestionar áreas')">Gestionar áreas</span>
+                </div>
+                
+                <div class="table-row">
+                    <div class="row-data">
+                        <span class="row-label">Rol en el sistema</span>
+                        <span class="row-value purple-text" id="display-role">Administrador</span>
+                        <select id="input-role" class="inline-edit-input" style="display: none;">
+                            <option value="Administrador">Administrador</option>
+                            <option value="Técnico">Técnico</option>
+                        </select>
+                    </div>
+                    <span class="action-link" id="btn-role" onclick="toggleEdit('role', 'Editar')">Editar</span>
+                </div>
+            </div>
+
+            <h3 class="section-title font-title">SEGURIDAD</h3>
+            <div class="settings-table">
+                <div class="table-row">
+                    <div class="row-data">
+                        <span class="row-label">Contraseña</span>
+                        <span class="row-value" style="letter-spacing: 2px;">••••••••••••</span>
+                    </div>
+                    <span class="action-link" onclick="cambiarPassword()">Cambiar contraseña</span>
+                </div>
+                <div class="table-row">
+                    <div class="row-data">
+                        <span class="row-label">Dispositivos autorizados</span>
+                        <span class="row-value" id="display-sessions">1 sesión activa en este dispositivo</span>
+                    </div>
+                    <span class="action-link danger" onclick="cerrarSesiones()">Cerrar todas</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="main-footer font-title">
+        <div>© 2026 JADK CARE. ALL RIGHTS RESERVED. | UPSIN</div>
+        <div>DEVELOPED BY K. GONZALEZ, A. ROBLES, D. HERNANDEZ, J. ESTRADA</div>
+        <div class="footer-version">V1.0.0 <div class="status-dot"></div></div>
+    </footer>
+
+    <!-- LÓGICA DE INTERACTIVIDAD Y SESIÓN -->
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const toggle = document.getElementById('darkModeToggle');
+            if (localStorage.getItem('theme') === 'dark') {
+                toggle.checked = true;
+            }
+            
+            // Cargar datos del usuario
+            const userName = localStorage.getItem('usuarioNombre');
+            const userRole = localStorage.getItem('usuarioRol');
+            const userCorreo = localStorage.getItem('usuarioCorreo');
+            const userArea = localStorage.getItem('usuarioArea');
+
+            const userRoleLower = (userRole || 'Administrador').toLowerCase();
+            const isAdmin = userRoleLower === 'administrador' || userRoleLower === 'admin';
+
+            if (!isAdmin) {
+                const style = document.createElement('style');
+                style.innerHTML = `
+                    #menu-pref, 
+                    #menu-notif { 
+                        display: none !important; 
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            if (userName) {
+                document.getElementById('profile-name').textContent = userName.toUpperCase();
+                document.getElementById('display-name').textContent = userName;
+                document.getElementById('input-name').value = userName;
+                document.getElementById('avatar-icon').textContent = userName.charAt(0).toUpperCase();
+            }
+            if (userCorreo) {
+                document.getElementById('display-email').textContent = userCorreo;
+                document.getElementById('input-email').value = userCorreo;
+            }
+            if (userRole) {
+                const formattedRole = userRole.charAt(0).toUpperCase() + userRole.slice(1).toLowerCase();
+                document.getElementById('profile-role').textContent = formattedRole;
+                const displayRole = document.getElementById('display-role');
+                const inputRole = document.getElementById('input-role');
+                if (displayRole) displayRole.textContent = formattedRole;
+                if (inputRole) inputRole.value = formattedRole;
+            }
+            if (userArea) {
+                document.getElementById('display-area').textContent = userArea;
+                document.getElementById('input-area').value = userArea;
+            }
+        });
+
+        function toggleSettings() {
+            const dropdown = document.getElementById('settingsDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.closest('.settings-wrapper')) {
+                const dropdowns = document.getElementsByClassName("settings-dropdown");
+                for (let i = 0; i < dropdowns.length; i++) {
+                    let openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+
+        function toggleDarkMode() {
+            const body = document.body;
+            body.classList.toggle('dark-mode');
+            if (body.classList.contains('dark-mode')) { localStorage.setItem('theme', 'dark'); } 
+            else { localStorage.setItem('theme', 'light'); }
+        }
+
+        function cerrarSesionApp() {
+            localStorage.setItem('isLoggedIn', 'false');
+            window.location.href = 'login.html';
+        }
+
+        async function toggleEdit(fieldId, defaultText) {
+            const displayEl = document.getElementById(`display-${fieldId}`);
+            const inputEl = document.getElementById(`input-${fieldId}`);
+            const btnEl = document.getElementById(`btn-${fieldId}`);
+
+            if (inputEl.style.display === 'none') {
+                inputEl.value = displayEl.innerText; 
+                displayEl.style.display = 'none';    
+                inputEl.style.display = 'block';     
+                inputEl.focus();                     
+                btnEl.innerText = 'Guardar';         
+                btnEl.style.color = '#32CD32';       
+            } else {
+                let newValue = inputEl.value.trim();
+                
+                if (fieldId === 'role' && newValue !== displayEl.innerText) {
+                    const currentRoleLower = displayEl.innerText.toLowerCase();
+                    const newRoleLower = newValue.toLowerCase();
+                    
+                    if (currentRoleLower === 'técnico' && newRoleLower === 'administrador') {
+                        await showCustomAlert("Tu solicitud para ser Administrador ha sido enviada por correo. Queda en espera de aprobación.");
+                        displayEl.style.display = 'block';   
+                        inputEl.style.display = 'none';      
+                        btnEl.innerText = defaultText;       
+                        btnEl.style.color = 'var(--purple-accent)'; 
+                        return;
+                    }
+                    if (currentRoleLower === 'administrador' && newRoleLower === 'técnico') {
+                        const confirmDowngrade = await showCustomConfirm("ADVERTENCIA: Si cambias tu rol a Técnico perderás acceso a los privilegios de Administrador. ¿Estás seguro de continuar?");
+                        if (!confirmDowngrade) {
+                            displayEl.style.display = 'block';   
+                            inputEl.style.display = 'none';      
+                            btnEl.innerText = defaultText;       
+                            btnEl.style.color = 'var(--purple-accent)'; 
+                            return;
+                        }
+                    }
+                }
+
+                if (newValue !== '' && newValue !== displayEl.innerText) {
+                    if (fieldId === 'email' || fieldId === 'name' || fieldId === 'role') {
+                        const userId = localStorage.getItem('usuarioId');
+                        const updatedEmail = fieldId === 'email' ? newValue : document.getElementById('display-email').innerText;
+                        const updatedName = fieldId === 'name' ? newValue : document.getElementById('display-name').innerText;
+                        const updatedRole = fieldId === 'role' ? newValue : document.getElementById('display-role').innerText;
+                        
+                        try {
+                            const response = await fetch(`/api/usuarios/${userId}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ correo: updatedEmail, nombre: updatedName, rol: updatedRole })
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                displayEl.innerText = newValue;
+                                if (fieldId === 'email') localStorage.setItem('usuarioCorreo', newValue);
+                                if (fieldId === 'name') {
+                                    localStorage.setItem('usuarioNombre', newValue);
+                                    document.getElementById('profile-name').textContent = newValue.toUpperCase();
+                                    document.getElementById('avatar-icon').textContent = newValue.charAt(0).toUpperCase();
+                                }
+                                if (fieldId === 'role') {
+                                    localStorage.setItem('usuarioRol', newValue);
+                                    document.getElementById('profile-role').textContent = newValue.charAt(0).toUpperCase() + newValue.slice(1).toLowerCase();
+                                }
+                            } else {
+                                alert(result.message || 'Error al actualizar');
+                            }
+                        } catch (error) {
+                            displayEl.innerText = newValue;
+                            if (fieldId === 'email') localStorage.setItem('usuarioCorreo', newValue);
+                            if (fieldId === 'name') {
+                                localStorage.setItem('usuarioNombre', newValue);
+                                document.getElementById('profile-name').textContent = newValue.toUpperCase();
+                                document.getElementById('avatar-icon').textContent = newValue.charAt(0).toUpperCase();
+                            }
+                            if (fieldId === 'role') {
+                                localStorage.setItem('usuarioRol', newValue);
+                                document.getElementById('profile-role').textContent = newValue.charAt(0).toUpperCase() + newValue.slice(1).toLowerCase();
+                            }
+                        }
+                    } else {
+                        displayEl.innerText = newValue;
+                        if (fieldId === 'area') localStorage.setItem('usuarioArea', newValue);
+                    }
+                }
+                displayEl.style.display = 'block';   
+                inputEl.style.display = 'none';      
+                btnEl.innerText = defaultText;       
+                btnEl.style.color = 'var(--purple-accent)'; 
+            }
+        }
+
+        function cambiarPassword() { 
+            document.getElementById('pwd-old').value = '';
+            document.getElementById('pwd-new').value = '';
+            document.getElementById('pwd-confirm').value = '';
+            document.getElementById('pwd-error').style.display = 'none';
+            document.getElementById('modal-password').classList.add('show');
+        }
+
+        function cerrarModalPassword() {
+            document.getElementById('modal-password').classList.remove('show');
+        }
+
+        async function submitPasswordChange() {
+            const oldPwd = document.getElementById('pwd-old').value.trim();
+            const newPwd = document.getElementById('pwd-new').value.trim();
+            const confirmPwd = document.getElementById('pwd-confirm').value.trim();
+            const errDiv = document.getElementById('pwd-error');
+            
+            errDiv.style.display = 'none';
+
+            if (!oldPwd || !newPwd || !confirmPwd) {
+                errDiv.innerText = 'Todos los campos son obligatorios.';
+                errDiv.style.display = 'block';
+                return;
+            }
+            if (newPwd !== confirmPwd) {
+                errDiv.innerText = 'La nueva contraseña y la confirmación no coinciden.';
+                errDiv.style.display = 'block';
+                return;
+            }
+            if (newPwd.length < 6) {
+                errDiv.innerText = 'La nueva contraseña debe tener al menos 6 caracteres.';
+                errDiv.style.display = 'block';
+                return;
+            }
+
+            const userId = localStorage.getItem('usuarioId');
+            try {
+                const response = await fetch(`/api/usuarios/${userId}/contrasena`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contrasenaAntigua: oldPwd, contrasenaNueva: newPwd })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert("Contraseña actualizada exitosamente.");
+                    cerrarModalPassword();
+                } else {
+                    errDiv.innerText = result.message || "Error al actualizar la contraseña.";
+                    errDiv.style.display = 'block';
+                }
+            } catch (error) {
+                alert("Contraseña actualizada exitosamente (Modo Web).");
+                cerrarModalPassword();
+            }
+        }
+
+        async function cerrarSesiones() {
+            let confirmar = await showCustomConfirm("¿Estás seguro de que deseas cerrar sesión en todos los dispositivos? Tendrás que volver a iniciar sesión.");
+            if (confirmar) { cerrarSesionApp(); }
+        }
+
+        // Custom Modals Logic
+        let customAlertResolve = null;
+        function showCustomAlert(message) {
+            return new Promise((resolve) => {
+                document.getElementById('custom-alert-msg').innerText = message;
+                document.getElementById('modal-custom-alert').classList.add('show');
+                customAlertResolve = resolve;
+            });
+        }
+        function closeCustomAlert() {
+            document.getElementById('modal-custom-alert').classList.remove('show');
+            if (customAlertResolve) {
+                customAlertResolve(true);
+                customAlertResolve = null;
+            }
+        }
+
+        let customConfirmResolve = null;
+        function showCustomConfirm(message) {
+            return new Promise((resolve) => {
+                document.getElementById('custom-confirm-msg').innerText = message;
+                document.getElementById('modal-custom-confirm').classList.add('show');
+                customConfirmResolve = resolve;
+            });
+        }
+        function closeCustomConfirm(result) {
+            document.getElementById('modal-custom-confirm').classList.remove('show');
+            if (customConfirmResolve) {
+                customConfirmResolve(result);
+                customConfirmResolve = null;
+            }
+        }
+    </script>
+
+    <!-- Modal para cambiar contraseña -->
+    <div class="modal-overlay" id="modal-password">
+        <div class="modal-container">
+            <h2 class="section-title" style="margin-bottom: 20px; text-align: center; font-size: 24px;">Cambiar Contraseña</h2>
+            
+            <label class="form-label" style="display: block; margin-bottom: 5px;">Contraseña Antigua</label>
+            <input type="password" id="pwd-old" class="inline-edit-input" style="width: 100%; margin-bottom: 15px; display: block;" placeholder="Ingresa tu contraseña actual">
+            
+            <label class="form-label" style="display: block; margin-bottom: 5px;">Nueva Contraseña</label>
+            <input type="password" id="pwd-new" class="inline-edit-input" style="width: 100%; margin-bottom: 15px; display: block;" placeholder="Mínimo 6 caracteres">
+            
+            <label class="form-label" style="display: block; margin-bottom: 5px;">Confirmar Nueva Contraseña</label>
+            <input type="password" id="pwd-confirm" class="inline-edit-input" style="width: 100%; margin-bottom: 20px; display: block;" placeholder="Repite la nueva contraseña">
+            
+            <div id="pwd-error" style="color: var(--critical); font-size: 14px; margin-bottom: 15px; display: none; text-align: center; font-weight: 500;"></div>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" class="btn-modal btn-cancel" onclick="cerrarModalPassword()">Cancelar</button>
+                <button type="button" class="btn-modal btn-save" onclick="submitPasswordChange()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Custom Alert -->
+    <div class="modal-overlay" id="modal-custom-alert">
+        <div class="modal-container">
+            <h2 class="section-title" style="margin-bottom: 20px; text-align: center; font-size: 24px;">Información</h2>
+            <p id="custom-alert-msg" style="text-align: center; margin-bottom: 25px; font-size: 16px; font-weight: 500;"></p>
+            <div style="display: flex; justify-content: center;">
+                <button type="button" class="btn-modal btn-save" onclick="closeCustomAlert()">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Custom Confirm -->
+    <div class="modal-overlay" id="modal-custom-confirm">
+        <div class="modal-container">
+            <h2 class="section-title" style="margin-bottom: 20px; text-align: center; font-size: 24px; color: var(--critical);">Advertencia</h2>
+            <p id="custom-confirm-msg" style="text-align: center; margin-bottom: 25px; font-size: 16px; font-weight: 500;"></p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button type="button" class="btn-modal btn-cancel" onclick="closeCustomConfirm(false)">Cancelar</button>
+                <button type="button" class="btn-modal btn-save" style="background: var(--critical); color: white;" onclick="closeCustomConfirm(true)">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

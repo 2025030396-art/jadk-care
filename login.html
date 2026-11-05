@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JADK Care - Acceso</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans+Condensed:wght@700&family=Oswald:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --purple-dark: #2b003a;   
+            --purple-accent: #b070b7; 
+            --bg-main: #f8f9fa;       
+            --panel-bg: #ececec;      
+            --text-dark: #1a1a1a;
+            --error-red: #d32f2f;
+            --header-shadow: none;
+        }
+
+        body.dark-mode {
+            --bg-main: #121212;
+            --purple-dark: #3a0052;
+            --panel-bg: #242424;
+            --text-dark: #f5f5f5;
+            --header-shadow: 0 4px 15px rgba(176, 112, 183, 0.15);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Oswald', sans-serif;
+            /* Fondo con gradiente sutil para que el cristal destaque */
+            background: radial-gradient(circle at 15% 50%, rgba(176, 112, 183, 0.15), transparent 40%),
+                        radial-gradient(circle at 85% 30%, rgba(29, 158, 117, 0.15), transparent 40%),
+                        var(--bg-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            color: var(--text-dark);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: radial-gradient(circle at 15% 50%, rgba(176, 112, 183, 0.25), transparent 40%),
+                        radial-gradient(circle at 85% 30%, rgba(29, 158, 117, 0.2), transparent 40%),
+                        var(--bg-main);
+        }
+
+        .font-title { font-family: 'Open Sans Hebrew Condensed', 'Open Sans Condensed', sans-serif; }
+
+        /* ==========================================
+           HEADER Y FOOTER
+           ========================================== */
+        .top-header {
+            background-color: var(--purple-dark);
+            padding: 0 30px;
+            height: 60px; 
+            flex-shrink: 0; /* Prohíbe que el header se aplaste */
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--header-shadow);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .logo-link { display: flex; align-items: center; text-decoration: none; outline: none; }
+        .header-logo-svg { height: 35px; width: auto; transition: transform 0.2s ease, filter 0.2s ease; }
+        .header-logo-svg:hover { transform: scale(1.05); filter: drop-shadow(0 0 8px rgba(206, 203, 246, 0.5)); }
+
+        .main-footer { 
+            /* Efecto Glassmorfismo para el Footer */
+            background: rgba(255, 255, 255, 0.15); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            
+            color: var(--text-dark); 
+            padding: 15px 30px; 
+            font-size: 13px; 
+            letter-spacing: 0.5px; 
+            flex-shrink: 0; 
+
+            /* LA MAGIA PARA CENTRAR PERFECTAMENTE */
+            display: grid; 
+            grid-template-columns: 1fr auto 1fr; 
+            align-items: center; 
+        }
+        .main-footer > div:first-child { 
+            text-align: left; 
+        }
+        .main-footer > div:nth-child(2) { 
+            text-align: center; 
+        }
+        .footer-version { 
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-end; /* Empuja la versión a la derecha */
+            gap: 6px; 
+        }
+
+        /* Ajuste del Glassmorfismo para el Modo Oscuro */
+        body.dark-mode .main-footer {
+            background: rgba(0, 0, 0, 0.25);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            color: #f5f5f5;
+        }
+
+        /* Ajuste del Glassmorfismo para el Modo Oscuro */
+        body.dark-mode .main-footer {
+            background: rgba(0, 0, 0, 0.25);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            color: #f5f5f5;
+        }
+        .footer-version { display: flex; align-items: center; gap: 6px; }
+        .status-dot { width: 10px; height: 10px; background-color: #32CD32; border-radius: 50%; }
+
+        /* ==========================================
+           ÁREA DE SCROLL INDEPENDIENTE (MAIN CONTENT)
+           ========================================== */
+        .main-content { 
+            flex: 1; 
+            display: flex; 
+            padding: 20px; 
+            overflow-y: auto; /* Permite scroll solo aquí si la pantalla es muy pequeña */
+        }
+
+        .auth-card {
+            /* Efecto Glassmorfismo */
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            
+            border-radius: 16px; /* Un poco más redondo para el estilo cristal */
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: auto;
+        }
+
+        /* Glassmorfismo para el Modo Oscuro en el Login */
+        body.dark-mode .auth-card {
+            background: rgba(36, 36, 36, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .auth-logo { width: 160px; height: auto; margin-bottom: 30px; }
+
+        .auth-view { width: 100%; display: none; animation: fadeIn 0.3s ease; }
+        .auth-view.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .form-group { margin-bottom: 20px; width: 100%; }
+        .form-label { display: block; font-family: 'Open Sans Hebrew Condensed', sans-serif; font-weight: 700; font-size: 15px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-input {
+            width: 100%; padding: 12px 15px; background-color: #dfdfdf; border: 1px solid #ccc;
+            border-radius: 6px; font-family: 'Oswald', sans-serif; font-size: 15px; color: #333; outline: none; transition: border-color 0.2s;
+        }
+        .form-input:focus { border-color: var(--purple-accent); }
+
+        .login-utils { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 25px; }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .link { color: var(--text-dark); text-decoration: underline; cursor: pointer; font-weight: 500; }
+        .link:hover { color: var(--purple-accent); }
+
+        .btn-primary {
+            width: 100%; background-color: var(--purple-accent); color: white; border: none; padding: 14px; border-radius: 6px;
+            font-family: 'Open Sans Hebrew Condensed', sans-serif; font-size: 18px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; cursor: pointer; transition: background-color 0.2s, transform 0.1s;
+        }
+        .btn-primary:hover { background-color: #9b5a9f; }
+        .btn-primary:active { transform: scale(0.98); }
+
+        .auth-footer-text { text-align: center; margin-top: 20px; font-size: 15px; }
+        .helper-text { text-align: center; font-size: 16px; margin-bottom: 25px; line-height: 1.4; opacity: 0.8; }
+
+        .error-message {
+            color: var(--error-red); background-color: #fdedea; border: 1px solid #f5c6cb;
+            padding: 10px; border-radius: 6px; font-size: 14px; text-align: center; margin-bottom: 20px; display: none; 
+        }
+
+        .success-message {
+            color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb;
+            padding: 10px; border-radius: 6px; font-size: 14px; text-align: center; margin-bottom: 20px; display: none; 
+        }
+        /* Ocultar el encabezado en la pantalla de login para mayor amplitud */
+        .top-header {
+            display: none !important;
+        }
+        /* Loader Animado */
+        #global-loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center;
+            flex-direction: column; z-index: 9999;
+        }
+        #global-loader.show {
+            display: flex;
+        }
+        .jadk-spinner {
+            width: 120px; height: 120px;
+            animation: pulse-spin 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        @keyframes pulse-spin {
+            0% { transform: scale(0.9) rotate(0deg); opacity: 0.8; }
+            50% { transform: scale(1.1) rotate(180deg); opacity: 1; }
+            100% { transform: scale(0.9) rotate(360deg); opacity: 0.8; }
+        }
+        .loader-text {
+            margin-top: 20px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 5px;
+            animation: blink 1.5s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+    
+</head>
+<body>
+
+    <!-- Loader Global -->
+    <div id="global-loader">
+        <svg class="jadk-spinner" viewBox="260 20 160 160" role="img" xmlns="http://www.w3.org/2000/svg">
+            <rect x="295" y="44" width="90" height="90" rx="13" style="fill:rgb(83, 74, 183);stroke:none;"/>
+            <rect x="288" y="58" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="288" y="73" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="288" y="88" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="288" y="103" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="385" y="58" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="385" y="73" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="385" y="88" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="385" y="103" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="307" y="37" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="323" y="37" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="339" y="37" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="355" y="37" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="307" y="134" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="323" y="134" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="339" y="134" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="355" y="134" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="304" y="53" width="72" height="72" rx="7" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            
+            <line x1="316" y1="64" x2="316" y2="76" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+            <line x1="316" y1="76" x2="328" y2="76" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+            <line x1="364" y1="64" x2="364" y2="76" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+            <line x1="364" y1="76" x2="352" y2="76" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+            <line x1="316" y1="114" x2="316" y2="102" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+            <line x1="316" y1="102" x2="328" y2="102" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+            <line x1="364" y1="114" x2="364" y2="102" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+            <line x1="364" y1="102" x2="352" y2="102" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+            
+            <circle cx="316" cy="64" r="2.5" style="fill:rgb(175, 169, 236);stroke:none;"/>
+            <circle cx="364" cy="64" r="2.5" style="fill:rgb(175, 169, 236);stroke:none;"/>
+            <circle cx="316" cy="114" r="2.5" style="fill:rgb(175, 169, 236);stroke:none;"/>
+            <circle cx="364" cy="114" r="2.5" style="fill:rgb(175, 169, 236);stroke:none;"/>
+            
+            <path d="M340 100 C340 100 324 90 324 80 C324 74.5 328.5 70 334 70 C337 70 340 73 340 73 C340 73 343 70 346 70 C351.5 70 356 74.5 356 80 C356 90 340 100 340 100Z" style="fill:rgb(29, 158, 117);stroke:none;"/>
+            <polyline points="314,111 321,111 324,105 327,117 330,105 333,111 347,111 350,107 353,111 366,111" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="stroke:rgb(29, 158, 117);"/>
+        </svg>
+        <div class="loader-text">CARGANDO...</div>
+    </div>
+
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+
+    <header class="top-header">
+        <a href="index.html" class="logo-link" title="Ir al Inicio">
+            <svg class="header-logo-svg" viewBox="0 0 320 160" xmlns="http://www.w3.org/2000/svg">
+              <title>JADK CARE logo texto</title>
+              <text x="160" y="80" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="72" font-weight="700" fill="#CECBF6" letter-spacing="12">JADK</text>
+              <line x1="30" y1="92" x2="290" y2="92" stroke="#1D9E75" stroke-width="2" stroke-linecap="round"/>
+              <text x="160" y="140" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="44" font-weight="300" fill="#1D9E75" letter-spacing="18">CARE</text>
+            </svg>
+        </a>
+    </header>
+
+    <main class="main-content">
+        <div class="auth-card">
+            
+            <svg class="auth-logo" viewBox="240 20 200 260" role="img" xmlns="http://www.w3.org/2000/svg">
+                <rect x="295" y="44" width="90" height="90" rx="13" style="fill:rgb(83, 74, 183);stroke:none;"/>
+                <rect x="288" y="58" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+                <rect x="288" y="73" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+                <rect x="288" y="88" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+                <rect x="288" y="103" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+                <rect x="385" y="58" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+                <rect x="385" y="73" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+                <rect x="385" y="88" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+                <rect x="385" y="103" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+                <rect x="307" y="37" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+                <rect x="323" y="37" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+                <rect x="339" y="37" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+                <rect x="355" y="37" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+                <rect x="307" y="134" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+                <rect x="323" y="134" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+                <rect x="339" y="134" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+                <rect x="355" y="134" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+                <rect x="304" y="53" width="72" height="72" rx="7" style="fill:rgb(60, 52, 137);stroke:none;"/>
+                
+                <line x1="316" y1="64" x2="316" y2="76" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+                <line x1="316" y1="76" x2="328" y2="76" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+                <line x1="364" y1="64" x2="364" y2="76" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+                <line x1="364" y1="76" x2="352" y2="76" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+                <line x1="316" y1="114" x2="316" y2="102" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+                <line x1="316" y1="102" x2="328" y2="102" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+                <line x1="364" y1="114" x2="364" y2="102" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+                <line x1="364" y1="102" x2="352" y2="102" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+                
+                <circle cx="316" cy="64" r="2.5" style="fill:rgb(175, 169, 236);stroke:none;"/>
+                <circle cx="364" cy="64" r="2.5" style="fill:rgb(175, 169, 236);stroke:none;"/>
+                <circle cx="316" cy="114" r="2.5" style="fill:rgb(175, 169, 236);stroke:none;"/>
+                <circle cx="364" cy="114" r="2.5" style="fill:rgb(175, 169, 236);stroke:none;"/>
+                
+                <path d="M340 100 C340 100 324 90 324 80 C324 74.5 328.5 70 334 70 C337 70 340 73 340 73 C340 73 343 70 346 70 C351.5 70 356 74.5 356 80 C356 90 340 100 340 100Z" style="fill:rgb(29, 158, 117);stroke:none;"/>
+                <polyline points="314,111 321,111 324,105 327,117 330,105 333,111 347,111 350,107 353,111 366,111" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="stroke:rgb(29, 158, 117);"/>
+
+                <text x="340" y="192" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="46" font-weight="700" letter-spacing="10" style="fill:rgb(60, 52, 137);stroke:none;">JADK</text>
+                <rect x="255" y="201" width="170" height="1.5" rx="1" style="fill:rgb(29, 158, 117);stroke:none;"/>
+                <text x="340" y="235" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="28" font-weight="300" letter-spacing="18" style="fill:rgb(15, 110, 86);stroke:none;">CARE</text>
+                
+                <circle cx="323" cy="258" r="3.5" style="fill:rgb(83, 74, 183);stroke:none;"/>
+                <circle cx="340" cy="258" r="3.5" style="fill:rgb(29, 158, 117);stroke:none;"/>
+                <circle cx="357" cy="258" r="3.5" style="fill:rgb(83, 74, 183);stroke:none;"/>
+            </svg>
+
+            <!-- VISTAS -->
+            <div id="view-login" class="auth-view active">
+                <div id="login-error" class="error-message"></div>
+                <div id="login-success" class="success-message"></div>
+                
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group"><label class="form-label">USUARIO</label><input type="text" id="login-user" class="form-input" placeholder="Nombre de Usuario"></div>
+                    <div class="form-group"><label class="form-label">CONTRASEÑA</label><input type="password" id="login-pass" class="form-input" placeholder="Ingrese la contraseña"></div>
+                    <div class="login-utils"><label class="checkbox-group"><input type="checkbox"> Recuerdame</label><span class="link" onclick="switchView('view-forgot')">¿Olvidaste la contraseña?</span></div>
+                    <button type="submit" class="btn-primary">INICIAR SESIÓN</button>
+                    <div class="auth-footer-text">¿No tienes una cuenta? <span class="link" onclick="switchView('view-register')">Crear cuenta</span></div>
+                </form>
+            </div>
+
+            <div id="view-register" class="auth-view">
+                <div id="register-error" class="error-message"></div>
+                <form onsubmit="handleRegister(event)">
+                    <div class="form-group"><label class="form-label">USUARIO</label><input type="text" id="reg-user" class="form-input" placeholder="Nombre de Usuario"></div>
+                    <div class="form-group"><label class="form-label">CONTRASEÑA</label><input type="password" id="reg-pass" class="form-input" placeholder="••••••••"></div>
+                    <div class="form-group"><label class="form-label">CORREO ELECTRÓNICO</label><input type="email" id="reg-email" class="form-input" placeholder="correo@gmail.com"></div>
+                    <button type="submit" class="btn-primary">REGISTRARSE</button>
+                    <div class="auth-footer-text"><span class="link" onclick="switchView('view-login')">← Volver a iniciar sesión</span></div>
+                </form>
+            </div>
+
+            <div id="view-change" class="auth-view">
+                <div id="change-error" class="error-message"></div>
+                <form onsubmit="handleChangePassword(event)">
+                    <div class="form-group"><label class="form-label">ANTERIOR CONTRASEÑA</label><input type="password" id="change-old" class="form-input" placeholder="••••••••"></div>
+                    <div class="form-group"><label class="form-label">NUEVA CONTRASEÑA</label><input type="password" id="change-new" class="form-input" placeholder="••••••••"></div>
+                    <div class="form-group"><label class="form-label">CONFIRMAR CONTRASEÑA</label><input type="password" id="change-confirm" class="form-input" placeholder="••••••••"></div>
+                    <div class="login-utils" style="justify-content: flex-end;"><span class="link" onclick="switchView('view-forgot')">¿Olvidaste la contraseña?</span></div>
+                    <button type="submit" class="btn-primary">GUARDAR CAMBIOS</button>
+                    <div class="auth-footer-text"><span class="link" onclick="window.location.href='perfil.html'">← Cancelar y volver al Perfil</span></div>
+                </form>
+            </div>
+
+            <div id="view-forgot" class="auth-view">
+                <div id="forgot-error" class="error-message"></div>
+                <form onsubmit="handleForgot(event)">
+                    <div class="form-group"><label class="form-label">CORREO ELECTRÓNICO</label><input type="email" id="forgot-email" class="form-input" placeholder="correo@gmail.com"></div>
+                    <p class="helper-text">Te enviaremos un código de verificación para<br>restablecer tu contraseña.</p>
+                    <button type="submit" class="btn-primary">ENVIAR CÓDIGO</button>
+                    <div class="auth-footer-text" style="margin-top: 25px;"><span class="link" onclick="switchView('view-login')">← Volver a iniciar sesión</span></div>
+                </form>
+            </div>
+
+            <div id="view-verify" class="auth-view">
+                <div id="verify-error" class="error-message"></div>
+                <div id="verify-success" class="success-message"></div>
+                <form onsubmit="handleVerify(event)">
+                    <div class="form-group"><label class="form-label">CÓDIGO DE VERIFICACIÓN</label><input type="text" id="verify-code" class="form-input" placeholder="Ej. 123456" maxlength="6" style="text-align: center; font-size: 20px; letter-spacing: 4px;"></div>
+                    <p class="helper-text" style="font-size: 14px; margin-bottom: 10px;">Hemos enviado un código de 6 dígitos a tu correo.</p>
+                    <div class="login-utils" style="justify-content: center;"><span class="link" onclick="reenviarCodigo()">¿No lo recibiste? Reenviar código</span></div>
+                    <button type="submit" class="btn-primary">VERIFICAR CÓDIGO</button>
+                    <div class="auth-footer-text" style="margin-top: 25px;"><span class="link" onclick="switchView('view-login')">← Volver a iniciar sesión</span></div>
+                </form>
+            </div>
+
+            <div id="view-reset" class="auth-view">
+                <div id="reset-error" class="error-message"></div>
+                <form onsubmit="handleReset(event)">
+                    <div class="form-group"><label class="form-label">NUEVA CONTRASEÑA</label><input type="password" id="reset-new" class="form-input" placeholder="••••••••"></div>
+                    <div class="form-group"><label class="form-label">CONFIRMAR CONTRASEÑA</label><input type="password" id="reset-confirm" class="form-input" placeholder="••••••••"></div>
+                    <p class="helper-text" style="font-size: 14px;">Ingresa tu nueva contraseña para acceder.</p>
+                    <button type="submit" class="btn-primary">RESTABLECER CONTRASEÑA</button>
+                </form>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="main-footer font-title">
+        <div>© 2026 JADK CARE. ALL RIGHTS RESERVED. | UPSIN</div>
+        <div>DEVELOPED BY K. GONZALEZ, A. ROBLES, D. HERNANDEZ, J. ESTRADA</div>
+        <div class="footer-version">V1.0.0 <div class="status-dot"></div></div>
+    </footer>
+
+    <script>
+        window.onload = function() {
+            if(window.location.hash === '#change') { switchView('view-change'); }
+        };
+
+        function switchView(viewId) {
+            document.querySelectorAll('.auth-view').forEach(view => view.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            document.querySelectorAll('.error-message, .success-message').forEach(msg => msg.style.display = 'none');
+            document.querySelectorAll('.form-input').forEach(input => { input.value = ''; input.style.borderColor = '#ccc'; });
+        }
+
+        // Funciones de Loader
+        function showLoader(msg = "CARGANDO...") {
+            document.querySelector('.loader-text').innerText = msg;
+            document.getElementById('global-loader').classList.add('show');
+        }
+        function hideLoader() {
+            document.getElementById('global-loader').classList.remove('show');
+        }
+
+        // ===========================================
+        // LÓGICA DE INICIO DE SESIÓN CON API
+        // ===========================================
+        async function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('login-user'), pass = document.getElementById('login-pass'), errorBox = document.getElementById('login-error');
+            
+            if (!user.value.trim() || !pass.value.trim()) {
+                errorBox.textContent = 'Por favor, llena todos los campos.'; errorBox.style.display = 'block';
+                user.style.borderColor = 'var(--error-red)'; pass.style.borderColor = 'var(--error-red)'; return;
+            }
+            
+            showLoader("INICIANDO SESIÓN...");
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo: user.value.trim(), contrasena: pass.value.trim() })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('usuarioNombre', data.usuario);
+                    localStorage.setItem('usuarioCorreo', data.correo);
+                    localStorage.setItem('usuarioRol', data.rol);
+                    localStorage.setItem('usuarioId', data.idUsuario);
+                    window.location.href = 'index.html'; 
+                } else {
+                    errorBox.textContent = data.message || 'Usuario o contraseña incorrectos.'; 
+                    errorBox.style.display = 'block';
+                    user.style.borderColor = 'var(--error-red)'; pass.style.borderColor = 'var(--error-red)';
+                }
+            } catch (error) {
+                // Modo Demostración Web / GitHub Pages (cuando el backend Java no está conectado)
+                console.warn("Backend no disponible. Accediendo en Modo Web interactivo.");
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('usuarioNombre', user.value.trim().split('@')[0] || 'Juan José Estrada');
+                localStorage.setItem('usuarioCorreo', user.value.trim() || '2025030396@upsin.edu.mx');
+                localStorage.setItem('usuarioRol', 'Administrador');
+                localStorage.setItem('usuarioId', '1');
+                localStorage.setItem('isDemoMode', 'true');
+                window.location.href = 'index.html';
+                return;
+            } finally {
+                hideLoader();
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const user = document.getElementById('reg-user'), pass = document.getElementById('reg-pass'), email = document.getElementById('reg-email'), errorBox = document.getElementById('register-error');
+            if (!user.value.trim() || !pass.value.trim() || !email.value.trim()) {
+                errorBox.textContent = 'Todos los campos son obligatorios para el registro.'; errorBox.style.display = 'block'; return;
+            }
+            
+            showLoader("REGISTRANDO USUARIO...");
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre: user.value.trim(), correo: email.value.trim(), contrasena: pass.value.trim() })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    alert('¡Cuenta creada con éxito! Ahora inicia sesión.'); 
+                    switchView('view-login');
+                } else {
+                    errorBox.textContent = data.message || 'Error al registrar la cuenta.'; 
+                    errorBox.style.display = 'block';
+                }
+            } catch (error) {
+                errorBox.textContent = 'Error al conectar con el servidor.'; 
+                errorBox.style.display = 'block';
+            } finally {
+                hideLoader();
+            }
+        }
+
+        function handleChangePassword(e) {
+            e.preventDefault();
+            const oldP = document.getElementById('change-old'), newP = document.getElementById('change-new'), confP = document.getElementById('change-confirm'), errorBox = document.getElementById('change-error');
+            if (!oldP.value.trim() || !newP.value.trim() || !confP.value.trim()) { errorBox.textContent = 'Llena todos los campos de contraseña.'; errorBox.style.display = 'block'; return; }
+            if (newP.value !== confP.value) { errorBox.textContent = 'La nueva contraseña y la confirmación no coinciden.'; errorBox.style.display = 'block'; return; }
+            alert('¡Tu contraseña ha sido actualizada correctamente!'); window.location.href = 'perfil.html';
+        }
+
+        function handleForgot(e) {
+            e.preventDefault();
+            const email = document.getElementById('forgot-email'), errorBox = document.getElementById('forgot-error');
+            if (!email.value.trim()) { errorBox.textContent = 'Ingresa un correo electrónico válido.'; errorBox.style.display = 'block'; email.style.borderColor = 'var(--error-red)'; return; }
+            switchView('view-verify');
+        }
+
+        function handleVerify(e) {
+            e.preventDefault();
+            const code = document.getElementById('verify-code'), errorBox = document.getElementById('verify-error');
+            if (code.value.length < 6) { errorBox.textContent = 'Ingresa el código completo de 6 dígitos.'; errorBox.style.display = 'block'; code.style.borderColor = 'var(--error-red)'; return; }
+            switchView('view-reset');
+        }
+
+        function reenviarCodigo() {
+            const successBox = document.getElementById('verify-success'), errorBox = document.getElementById('verify-error');
+            errorBox.style.display = 'none'; successBox.textContent = '¡Un nuevo código ha sido enviado a tu correo!'; successBox.style.display = 'block';
+        }
+
+        async function handleReset(e) {
+            e.preventDefault();
+            const newP = document.getElementById('reset-new'), confP = document.getElementById('reset-confirm'), errorBox = document.getElementById('reset-error');
+            const email = document.getElementById('forgot-email').value.trim(); // Tomamos el correo del paso anterior
+            
+            if (!newP.value.trim() || !confP.value.trim()) { errorBox.textContent = 'Por favor ingresa la nueva contraseña.'; errorBox.style.display = 'block'; return; }
+            if (newP.value !== confP.value) { errorBox.textContent = 'Las contraseñas no coinciden.'; errorBox.style.display = 'block'; return; }
+            
+            showLoader("RESTABLECIENDO CONTRASEÑA...");
+            try {
+                const response = await fetch('/api/auth/reset', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo: email, nuevaContrasena: newP.value.trim() })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    const loginSuccess = document.getElementById('login-success'); switchView('view-login');
+                    loginSuccess.textContent = 'Contraseña restablecida con éxito en la Base de Datos. Inicia sesión.'; loginSuccess.style.display = 'block';
+                } else {
+                    errorBox.textContent = data.message || 'Error al restablecer la contraseña.';
+                    errorBox.style.display = 'block';
+                }
+            } catch (error) {
+                errorBox.textContent = 'Error al conectar con el servidor.';
+                errorBox.style.display = 'block';
+            } finally {
+                hideLoader();
+            }
+        }
+
+        document.querySelectorAll('.form-input').forEach(input => { input.addEventListener('input', function() { this.style.borderColor = 'var(--purple-accent)'; }); });
+        
+    </script>
+</body>
+</html>
