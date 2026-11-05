@@ -477,8 +477,16 @@
                     user.style.borderColor = 'var(--error-red)'; pass.style.borderColor = 'var(--error-red)';
                 }
             } catch (error) {
-                errorBox.textContent = 'Error al conectar con el servidor.'; 
-                errorBox.style.display = 'block';
+                // Modo Demostración Web / GitHub Pages (cuando el backend Java no está conectado)
+                console.warn("Backend no disponible. Accediendo en Modo Web interactivo.");
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('usuarioNombre', user.value.trim().split('@')[0] || 'Juan José Estrada');
+                localStorage.setItem('usuarioCorreo', user.value.trim() || '2025030396@upsin.edu.mx');
+                localStorage.setItem('usuarioRol', 'Administrador');
+                localStorage.setItem('usuarioId', '1');
+                localStorage.setItem('isDemoMode', 'true');
+                window.location.href = 'index.html';
+                return;
             } finally {
                 hideLoader();
             }

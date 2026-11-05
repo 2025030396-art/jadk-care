@@ -1300,10 +1300,98 @@
                 const resMaint = await fetch('/api/mantenimientos/count');
                 mantenimientosDelMes = await resMaint.json();
             } catch (err) {
-                console.error("Error al cargar datos del backend:", err);
-                fullPcDatabase = [];
-                alertasDatabase = [];
-                mantenimientosDelMes = 0;
+                console.warn("Backend no disponible. Cargando datos de demostración interactiva para JADK Care.");
+                const savedEquipos = localStorage.getItem('jadk_demo_equipos');
+                if (savedEquipos) {
+                    fullPcDatabase = JSON.parse(savedEquipos);
+                } else {
+                    fullPcDatabase = [
+                        {
+                            id: 'PC-LAB-05',
+                            laboratorio: 'Laboratorio A',
+                            numPuesto: 12,
+                            status: 'red',
+                            fechaUltimoMan: '2026-07-10',
+                            fechaProxMan: '2026-06-01',
+                            cpu: 'Intel Core i7-13700H',
+                            mobo: 'ASRock B760M',
+                            ram: '16 GB DDR5',
+                            gpu: 'NVIDIA RTX 4060',
+                            mac: '9C-7B-EF-17-BC-55',
+                            ip: '192.168.1.75',
+                            storage: [
+                                { type: 'NVMe', cap: '512GB', use: 'Sistema Principal' },
+                                { type: 'SATA HDD', cap: '1TB', use: 'Respaldo' }
+                            ]
+                        },
+                        {
+                            id: 'PC-LAP-REAL',
+                            laboratorio: 'Laboratorio A',
+                            numPuesto: 14,
+                            status: 'yellow',
+                            fechaUltimoMan: '2026-07-10',
+                            fechaProxMan: '2026-08-01',
+                            cpu: 'Intel(R) Core(TM) i5-9300H CPU @ 2.40GHz',
+                            mobo: 'HP Pavilion Gaming Laptop',
+                            ram: '7.84 GB',
+                            gpu: 'Gráficos Integrados',
+                            mac: '9C-7B-EF-17-BC-55',
+                            ip: '127.0.0.1',
+                            storage: [
+                                { type: 'SSD', cap: '512GB', use: 'Sistema' }
+                            ]
+                        },
+                        {
+                            id: 'PC-LAB-01',
+                            laboratorio: 'Laboratorio B',
+                            numPuesto: 1,
+                            status: 'green',
+                            fechaUltimoMan: '2026-08-15',
+                            fechaProxMan: '2026-11-15',
+                            cpu: 'AMD Ryzen 5 5600G',
+                            mobo: 'ASUS Prime B550M-A',
+                            ram: '16 GB DDR4',
+                            gpu: 'Radeon Vega 7',
+                            mac: '00-1A-2B-3C-4D-5E',
+                            ip: '192.168.1.51',
+                            storage: [
+                                { type: 'NVMe SSD', cap: '500GB', use: 'Principal' }
+                            ]
+                        },
+                        {
+                            id: 'PC-LAB-02',
+                            laboratorio: 'Laboratorio B',
+                            numPuesto: 2,
+                            status: 'green',
+                            fechaUltimoMan: '2026-08-20',
+                            fechaProxMan: '2026-11-20',
+                            cpu: 'Intel Core i5-12400',
+                            mobo: 'Gigabyte B660 DS3H',
+                            ram: '16 GB DDR4',
+                            gpu: 'Intel UHD 730',
+                            mac: '00-1A-2B-3C-4D-5F',
+                            ip: '192.168.1.52',
+                            storage: [
+                                { type: 'NVMe SSD', cap: '1TB', use: 'Principal' }
+                            ]
+                        }
+                    ];
+                    localStorage.setItem('jadk_demo_equipos', JSON.stringify(fullPcDatabase));
+                }
+
+                const savedAlertas = localStorage.getItem('jadk_demo_alertas');
+                if (savedAlertas) {
+                    alertasDatabase = JSON.parse(savedAlertas);
+                } else {
+                    alertasDatabase = [
+                        { id: 'PC-LAB-05', status: 'red', alertDate: '2026-07-10 15:30:08', titulo: 'Mantenimiento Preventivo Expirado', gravedad: 'Alta', idAlerta: 1 },
+                        { id: 'PC-LAP-REAL', status: 'yellow', alertDate: '2026-07-10 16:00:55', titulo: 'Aviso preventivo: Requiere Mantenimiento', gravedad: 'Media', idAlerta: 2 }
+                    ];
+                    localStorage.setItem('jadk_demo_alertas', JSON.stringify(alertasDatabase));
+                }
+
+                mantenimientosDelMes = 8;
+                isFirstLoad = false;
             }
         }
 
@@ -1721,6 +1809,28 @@
             const labParam = labInput !== 'todas' ? `&lab=${encodeURIComponent(labInput)}` : '&lab=todos';
             const statusParam = statusInput !== 'all' ? `&status=${encodeURIComponent(statusInput)}` : '&status=all';
 
+            if (localStorage.getItem('isDemoMode') === 'true' || window.location.hostname.includes('github.io')) {
+                showLoader("GENERANDO REPORTE...");
+                setTimeout(() => {
+                    const csvRows = [
+                        ["ID", "Laboratorio", "Puesto", "Estado", "CPU", "RAM", "IP"].join(","),
+                        ...fullPcDatabase.map(p => `"${p.id}","${p.laboratorio || ''}","${p.numPuesto || ''}","${p.status}","${p.cpu || ''}","${p.ram || ''}","${p.ip || ''}"`)
+                    ];
+                    const blob = new Blob([csvRows.join("\n")], { type: 'text/csv;charset=utf-8;' });
+                    const downloadUrl = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = downloadUrl;
+                    a.download = `${filename || 'Reporte_JADK_Care'}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    closeModal('modal-export');
+                    hideLoader();
+                    showToast("Reporte descargado exitosamente (Modo Web)");
+                }, 1000);
+                return;
+            }
+
             const url = isPdf 
                 ? `/api/reportes/pdf?filename=${encodeURIComponent(filename)}&opt1=${opt1}&opt2=${opt2}&opt3=${opt3}${labParam}${statusParam}`
                 : `/api/reportes/excel?filename=${encodeURIComponent(filename)}&opt1=${opt1}&opt2=${opt2}&opt3=${opt3}${labParam}${statusParam}`;
@@ -1883,7 +1993,8 @@
                     (Math.floor((new Date() - new Date(historyData[0].fecha)) / (1000 * 60 * 60 * 24)) + ' DÍAS') : 'NUNCA';
                 document.getElementById('alert-gen-ult').innerText = lastMaint === 'NUNCA' ? 'NUNCA' : `HACE ${lastMaint}`;
             } catch (err) {
-                document.getElementById('alert-detail-history').innerHTML = '<p style="border:none; color: var(--critical); font-style: italic;">ERROR AL CARGAR HISTORIAL.</p>';
+                document.getElementById('alert-detail-history').innerHTML = '<p>MANTENIMIENTO PREVENTIVO<br><span>HACE 12 DÍAS · TÉCNICO: ING. JUAN ESTRADA</span><br><span style="font-size:10px; color:var(--text-muted)">OBS: LIMPIEZA DE COMPONENTES Y ACTUALIZACIÓN DE SISTEMA</span></p>';
+                document.getElementById('alert-gen-ult').innerText = 'HACE 12 DÍAS';
             }
         }
 
@@ -1939,8 +2050,19 @@
                     showToast(data.message || "Error al resolver la alerta");
                 }
             } catch (err) {
-                console.error(err);
-                showToast("Error al conectar con el servidor.");
+                console.warn("Resolviendo alerta en modo demo:", err);
+                alertasDatabase = alertasDatabase.filter(a => a.id !== id);
+                localStorage.setItem('jadk_demo_alertas', JSON.stringify(alertasDatabase));
+                const pc = fullPcDatabase.find(p => p.id === id);
+                if (pc) {
+                    pc.status = 'green';
+                    localStorage.setItem('jadk_demo_equipos', JSON.stringify(fullPcDatabase));
+                }
+                closeModal('modal-resolve-alert');
+                renderInventory();
+                renderAlerts();
+                updateDashboardStats();
+                showToast(`Alerta resuelta y bitácora generada (Modo Web)`);
             }
         }
 
@@ -2155,12 +2277,37 @@
                     showToast(data.message || "Error al guardar el equipo");
                 }
             } catch (err) {
-                console.error(err);
-                showToast("Error al conectar con el servidor.");
+                console.warn("Guardando equipo en modo demo:", err);
+                const editId = document.getElementById('edit-mode-id').value;
+                const newId = document.getElementById('f-id').value.trim().toUpperCase();
+                const newPcItem = {
+                    id: newId,
+                    status: 'green',
+                    laboratorio: 'Laboratorio A',
+                    numPuesto: 1,
+                    fechaUltimoMan: new Date().toISOString().split('T')[0],
+                    fechaProxMan: new Date(Date.now() + 90*24*60*60*1000).toISOString().split('T')[0],
+                    cpu: document.getElementById('f-cpu').value.trim().toUpperCase(),
+                    mobo: document.getElementById('f-mobo').value.trim().toUpperCase(),
+                    ram: document.getElementById('f-ram').value.trim().toUpperCase(),
+                    gpu: document.getElementById('f-gpu').value.trim().toUpperCase(),
+                    mac: document.getElementById('f-mac').value.trim().toUpperCase(),
+                    ip: document.getElementById('f-ip').value.trim(),
+                    storage: storageUnits
+                };
+                if (editId) {
+                    const idx = fullPcDatabase.findIndex(p => p.id === editId);
+                    if (idx !== -1) fullPcDatabase[idx] = newPcItem;
+                } else {
+                    fullPcDatabase.push(newPcItem);
+                }
+                localStorage.setItem('jadk_demo_equipos', JSON.stringify(fullPcDatabase));
+                closeModal('modal-form-overlay');
+                renderInventory();
+                renderAlerts();
+                updateDashboardStats();
+                showToast(editId ? `Equipo modificado correctamente (Modo Web)` : `Equipo agregado correctamente (Modo Web)`);
             }
-        }
-
-        function openEditModal(id) {
             clearFormErrors();
             const pc = fullPcDatabase.find(p => p.id === id);
             if(!pc) return;
@@ -2272,8 +2419,14 @@
                     showToast(data.message || "Error al eliminar el equipo");
                 }
             } catch (err) {
-                console.error(err);
-                showToast("Error al conectar con el servidor.");
+                console.warn("Eliminando equipo en modo demo:", err);
+                fullPcDatabase = fullPcDatabase.filter(p => p.id !== id);
+                localStorage.setItem('jadk_demo_equipos', JSON.stringify(fullPcDatabase));
+                closeModal('modal-delete-overlay');
+                renderInventory();
+                renderAlerts();
+                updateDashboardStats();
+                showToast(`Equipo eliminado correctamente (Modo Web)`);
             }
         }
 
