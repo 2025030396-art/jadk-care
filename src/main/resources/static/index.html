@@ -1,0 +1,2446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JADK Care - Sistema Integral</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans+Condensed:wght@700&family=Oswald:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* VARIABLES DE COLOR (LIGHT Y DARK MODE) */
+        :root {
+            --bg-main: #f3f4f6;       
+            --bg-sidebar: #e5e5e5;    
+            --purple-dark: #2d0a31;   
+            --purple-accent: #b070b7; 
+            --purple-light: #dfc3e1;  
+            --border-color: #ccc;  
+            --critical: #d32f2f;      
+            --warning: #f5a623;       
+            --success: #2e7d32;
+            --success-light: #4caf50;
+            --panel-bg: #ffffff;      
+            --card-bg: #ececec;       
+            --sidebar-hover: #d1d1d1; 
+            --glow-color: #E700FF;    
+            --glow-mix: #28162A;
+            --text-dark: #1a1a1a;
+            --text-muted: #555;
+            --input-bg: #d9d9d9;
+            --header-shadow: none;
+            
+            /* ==========================================
+           ADAPTACIÓN DE PESTAÑAS AL MODO OSCURO
+           ========================================== */
+        body.dark-mode .tab.inactive {
+            background-color: var(--card-bg); /* Se funde con el estilo oscuro */
+            color: var(--text-muted); /* Texto sutil para no cansar la vista */
+            border-color: var(--border-color);
+        }
+
+        body.dark-mode .tab.inactive:hover {
+            background-color: var(--purple-dark); /* Un morado profundo y elegante al interactuar */
+            color: white;
+        }
+
+            /* Variables Modales */
+            --modal-bg: #dedede;
+            --modal-section-bg: #c9c9c9;
+            --modal-input-bg: #b5b5b5;
+
+            /* Variables Alertas */
+            --alert-card-bg: #8B6914; 
+            --alert-card-crit: #b71c1c; 
+            --alert-btn-yellow: #FFB800; 
+            --chip-bg: #e0e0e0;
+            
+            /* Variables Reportes */
+            --rep-card-bg: #e5e5e5;
+            --rep-card-border: transparent;
+            --rep-badge-inv: #dfc3e1;
+            --rep-badge-inv-txt: #2b003a;
+            --rep-badge-crit: #ffcdd2;
+            --rep-badge-crit-txt: #b71c1c;
+            --rep-badge-warn: #c8e6c9;
+            --rep-badge-warn-txt: #2e7d32;
+
+            /* ==========================================
+           PERSONALIZACIÓN DEL SCROLLBAR
+           ========================================== */
+        
+        /* Para navegadores basados en Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-color) transparent;
+        }
+
+        /* Para navegadores basados en WebKit (Chrome, Edge, Safari, Opera) */
+        ::-webkit-scrollbar {
+            width: 8px; /* Ancho de la barra vertical */
+            height: 8px; /* Alto de la barra horizontal */
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent; /* Fondo invisible para que luzca el glassmorfismo */
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--border-color); /* Pastilla del color de tus bordes */
+            border-radius: 10px; /* Bordes redondeados suaves */
+            border: 2px solid transparent; 
+            background-clip: padding-box;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: var(--purple-accent); /* Brilla en morado al pasar el mouse */
+        }
+        }
+
+        body.dark-mode {
+            --bg-main: #121212;
+            --bg-sidebar: #1a1a1a;
+            --purple-dark: #3a0052; 
+            --border-color: #333333;
+            --panel-bg: #242424;
+            --card-bg: #2e2e2e;
+            --sidebar-hover: #333333;
+            --text-dark: #f5f5f5;
+            --text-muted: #cccccc;
+            --input-bg: #333333;
+            --header-shadow: 0 4px 15px rgba(176, 112, 183, 0.15); 
+            
+            /* Modales Dark Mode */
+            --modal-bg: #2a2a2a;
+            --modal-section-bg: #1f1f1f;
+            --modal-input-bg: #121212;
+            --chip-bg: #333333;
+
+            /* Reportes Dark Mode */
+            --rep-card-bg: #2e2e2e;
+            --rep-card-border: #444;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            font-family: 'Oswald', sans-serif; 
+            background-color: var(--bg-main);
+            margin: 0; padding: 0; height: 100vh;
+            display: grid; grid-template-rows: 60px calc(100vh - 60px); 
+            overflow: hidden; color: var(--text-dark);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .font-title { font-family: 'Open Sans Hebrew Condensed', 'Open Sans Condensed', sans-serif; }
+
+        /* ==========================================
+           HEADER UNIFICADO
+           ========================================== */
+        .top-header {
+            grid-column: 1 / -1; background-color: var(--purple-dark); padding: 0 30px;
+            height: 60px; color: white; display: flex; justify-content: space-between;
+            align-items: center; z-index: 10; box-shadow: var(--header-shadow);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .logo-link { display: flex; align-items: center; text-decoration: none; outline: none; }
+        .header-logo-svg { height: 35px; width: auto; transition: transform 0.2s ease, filter 0.2s ease; }
+        .header-logo-svg:hover { transform: scale(1.05); filter: drop-shadow(0 0 8px rgba(206, 203, 246, 0.5)); }
+
+        .header-controls { display: flex; align-items: center; gap: 20px; }
+        .search-input { background-color: var(--input-bg); color: var(--text-dark); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 15px; font-family: 'Oswald', sans-serif; width: 180px; font-size: 14px; transition: background-color 0.3s ease, color 0.3s ease; }
+        
+        .header-icon { width: 26px !important; height: 26px !important; min-width: 26px !important; min-height: 26px !important; flex-shrink: 0 !important; display: block; color: var(--purple-accent); cursor: pointer; transition: filter 0.25s ease, transform 0.25s ease, color 0.25s ease; }
+        .header-icon:hover { transform: scale(1.15); color: #ffffff; filter: drop-shadow(0 0 8px var(--glow-color)) drop-shadow(0 0 3px var(--glow-mix)); }
+
+        .settings-wrapper { position: relative; display: block; width: 26px; height: 26px; min-width: 26px; flex-shrink: 0; }
+        .settings-dropdown { 
+            position: absolute; 
+            top: 45px; 
+            right: 0; 
+            /* Efecto Glassmorfismo */
+            background: rgba(255, 255, 255, 0.65); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4); 
+            
+            border-radius: 8px; 
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15); 
+            width: 240px; 
+            display: none; 
+            flex-direction: column; 
+            overflow: hidden; 
+            z-index: 100; 
+        }
+
+        /* Glassmorfismo para el Modo Oscuro */
+        body.dark-mode .settings-dropdown {
+            background: rgba(36, 36, 36, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); 
+        }
+        .settings-dropdown.show { display: flex; animation: slideDown 0.2s ease; }
+        @keyframes slideDown { from {opacity:0; transform: translateY(-10px);} to {opacity:1; transform:translateY(0);} }
+        .dropdown-item { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: var(--text-dark); font-family: 'Open Sans Hebrew Condensed', sans-serif; font-size: 16px; font-weight: 700; text-transform: uppercase; transition: background-color 0.2s; cursor: pointer; }
+        .dropdown-item:hover { background-color: var(--bg-main); }
+        .dropdown-divider { height: 1px; background-color: var(--border-color); }
+        .text-danger { color: var(--critical); justify-content: flex-start; gap: 10px; }
+        .text-danger:hover { color: #ff4d4d; }
+
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #888; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--purple-accent); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* ==========================================
+           SIDEBAR
+           ========================================== */
+        .content-area { display: grid; grid-template-columns: 220px 1fr; height: 100%; }
+        .sidebar { background-color: var(--bg-sidebar); display: flex; flex-direction: column; align-items: center; padding-top: 20px; gap: 5px; border-right: 1px solid var(--border-color); transition: background-color 0.3s ease; }
+        .menu-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; position: relative; text-decoration: none; color: var(--text-dark); width: 100%; padding: 20px 0; transition: background-color 0.2s ease, color 0.2s ease; }
+        .menu-item:hover { background-color: var(--sidebar-hover); }
+        .menu-icon-container { width: 90px; height: 90px; margin-bottom: 5px; display: flex; justify-content: center; align-items: center; color: var(--purple-accent); transition: color 0.25s ease, filter 0.25s ease, transform 0.25s ease; }
+        .menu-item:hover .menu-icon-container { transform: scale(1.08); color: #ffffff; filter: drop-shadow(0 0 8px var(--glow-color)) drop-shadow(0 0 2px var(--glow-mix)); }
+        .menu-icon-container svg { width: 100%; height: 100%; stroke-width: 1.5px; }
+        .menu-text { font-family: 'Open Sans Hebrew Condensed', 'Open Sans Condensed', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 0.5px; text-transform: uppercase; transition: color 0.2s ease, text-shadow 0.2s ease; }
+        .menu-item:hover .menu-text { color: white; text-shadow: 0 0 8px var(--glow-color), 0 0 2px var(--glow-mix); }
+        .badge { position: absolute; top: 25px; right: 45px; background-color: #ffcc00; color: black; font-weight: bold; border-radius: 50%; width: 24px; height: 24px; display: flex; justify-content: center; align-items: center; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 5; }
+
+        .menu-item.active-menu { background-color: var(--sidebar-hover); }
+        .menu-item.active-menu .menu-icon-container { color: #ffffff; filter: drop-shadow(0 0 8px var(--glow-color)) drop-shadow(0 0 2px var(--glow-mix)); transform: scale(1.08); }
+        .menu-item.active-menu .menu-text { color: white; text-shadow: 0 0 8px var(--glow-color), 0 0 2px var(--glow-mix); }
+
+        /* ==========================================
+           ÁREA DE TRABAJO (VISTAS)
+           ========================================== */
+        .main-workspace { padding: 50px 40px 30px 40px; overflow-y: auto; display: flex; flex-direction: column; position: relative; }
+        .view-section { display: none; flex-direction: column; height: 100%; }
+        .view-section.active-view { 
+            display: flex; 
+            animation: fadeInSmooth 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards; 
+        }
+        
+        @keyframes fadeInSmooth { 
+            from { opacity: 0; transform: translateY(15px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* DASHBOARD */
+        .tabs { display: flex; align-items: flex-end; width: 100%; position: relative; z-index: 2; }
+        
+        .tab { 
+            flex: 1; 
+            height: 60px; 
+            border-radius: 12px 12px 0 0; 
+            font-family: 'Open Sans Hebrew Condensed', 'Open Sans Condensed', sans-serif; 
+            font-weight: 700; 
+            font-size: 16px; 
+            color: white; 
+            text-transform: uppercase; 
+            cursor: pointer; 
+            text-align: center; 
+            border: 2px solid var(--border-color); 
+            border-bottom: none; 
+            margin-right: -2px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            line-height: 1.1; 
+            /* Transiciones premium fusionadas con la curva anti-temblor */
+            transition: height 0.3s cubic-bezier(0.25, 1, 0.5, 1), 
+                        flex 0.3s cubic-bezier(0.25, 1, 0.5, 1), 
+                        font-size 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+                        background-color 0.25s ease,
+                        color 0.25s ease,
+                        border-color 0.25s ease,
+                        box-shadow 0.25s ease;
+        }
+        .tab:last-child { margin-right: 0; }
+        
+        .tab.active { 
+            flex: 1.35; 
+            height: 75px; 
+            background-color: var(--purple-accent); 
+            font-size: 24px; 
+            z-index: 3; 
+            color: white; 
+            border-color: var(--purple-accent); 
+            box-shadow: 0 -6px 15px rgba(176, 112, 183, 0.4); 
+        }
+        
+        .tab.inactive { 
+            background-color: var(--purple-light); 
+            color: #1a1a1a; 
+            height: 60px; 
+        }
+        
+        .tab.inactive:hover { 
+            background-color: #F39CFF; 
+            color: white; 
+            height: 66px; 
+        }
+
+        /* ==========================================
+           ADAPTACIÓN DE PESTAÑAS AL MODO OSCURO (PREMIUM)
+           ========================================== */
+        body.dark-mode .tab.active {
+            background: linear-gradient(135deg, #b070b7, #8e4497); 
+            color: #ffffff;
+            border-color: var(--purple-accent);
+            box-shadow: 0 -4px 10px rgba(176, 112, 183, 0.15);
+        }
+
+        body.dark-mode .tab.inactive {
+            background-color: #2E2A33; /* Contraste sutil para separar de la tarjeta */
+            color: #BDBDBD;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: none;
+        }
+
+        body.dark-mode .tab.inactive:hover {
+            background-color: var(--purple-dark);
+            color: white;
+            box-shadow: 0 -4px 12px rgba(176, 112, 183, 0.25);
+        }
+        .dashboard-panel { background-color: var(--panel-bg); border-radius: 0 0 12px 12px; padding: 30px; position: relative; z-index: 1; border: 2px solid var(--border-color); margin-top: -2px; flex: 1; display: flex; flex-direction: column; transition: background-color 0.3s ease; }
+        .welcome-text { font-family: 'Open Sans Hebrew Condensed', 'Open Sans Condensed', sans-serif; font-size: 22px; font-weight: 700; margin: 0 0 20px 0; text-transform: uppercase; }
+        .summary-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+        .card { background-color: var(--card-bg); padding: 20px 10px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: transform 0.2s, background-color 0.3s, box-shadow 0.2s; cursor: pointer; border-radius: 8px; border: 1px solid var(--border-color); }
+        .card:hover { transform: translateY(-5px); background-color: var(--sidebar-hover); box-shadow: 0 6px 12px rgba(0,0,0,0.2); }
+        .card-icon { width: 55px; height: 55px; margin-bottom: 10px; }
+        .card-icon svg { width: 100%; height: 100%; }
+        .card-value { font-family: 'Oswald', sans-serif; font-size: 28px; font-weight: 700; margin: 0; }
+        .card-label { font-family: 'Open Sans Hebrew Condensed', 'Open Sans Condensed', sans-serif; font-size: 15px; font-weight: 700; text-transform: uppercase; margin-top: 4px; letter-spacing: 0.5px; color: var(--text-muted); }
+
+        .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .chart-panel { background-color: var(--card-bg); padding: 20px 20px 30px 20px; display: flex; flex-direction: column; border-radius: 8px; border: 1px solid var(--border-color); transition: background-color 0.3s; }
+        .chart-title { font-family: 'Open Sans Hebrew Condensed', 'Open Sans Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--purple-accent); text-transform: uppercase; margin: 0 0 10px 0; letter-spacing: 0.5px; }
+        .chart-legend { display: flex; gap: 20px; font-size: 13px; font-family: 'Open Sans Hebrew Condensed', sans-serif; margin-bottom: 30px; font-weight: 600; }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .chart-center-wrapper { display: flex; justify-content: center; align-items: center; flex: 1; }
+        .donut-container { position: relative; width: 220px; height: 220px; }
+        .donut-container svg { transform: rotate(-90deg); width: 100%; height: 100%; overflow: visible; }
+        .donut-segment { fill: none; stroke-width: 5; cursor: pointer; transition: stroke-width 0.25s ease, filter 0.25s ease; }
+        .segment-operative { 
+            stroke: #25b125 !important; /* Fuerza el color verde sobreescribiendo el JS */
+            filter: drop-shadow(0 0 4px rgba(50, 205, 50, 0.2)); 
+        }
+        .segment-warning { filter: drop-shadow(0 0 6px rgba(245, 166, 35, 0.7)); }
+        .segment-critical { filter: drop-shadow(0 0 6px rgba(211, 47, 47, 0.7)); }
+        .segment-operative:hover { 
+            stroke-width: 7; 
+            filter: drop-shadow(0 0 8px rgba(50, 205, 50, 0.6)); 
+        }
+        .segment-warning:hover { stroke-width: 7; filter: drop-shadow(0 0 10px var(--warning)); }
+        .segment-critical:hover { stroke-width: 7; filter: drop-shadow(0 0 10px var(--critical)); }
+        .donut-inner { position: absolute; top: 42px; left: 42px; width: 136px; height: 136px; background-color: var(--card-bg); border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; pointer-events: none; padding: 5px; transition: background-color 0.3s; }
+        #donut-text-top { font-family: 'Open Sans Hebrew Condensed', sans-serif; font-size: 15px; color: var(--text-muted); margin: 0 0 2px 0; line-height: 1; transition: font-size 0.2s; }
+        #donut-text-bottom { font-family: 'Oswald', sans-serif; font-size: 36px; font-weight: 700; color: var(--text-dark); margin: 0; line-height: 1.1; transition: font-size 0.2s; }
+
+        .urgency-panel { background-color: var(--card-bg); padding: 20px; display: flex; flex-direction: column; border-radius: 8px; border: 1px solid var(--border-color); transition: background-color 0.3s; }
+        .urgency-title { font-family: 'Open Sans Hebrew Condensed', 'Open Sans Condensed', sans-serif; font-size: 18px; font-weight: 700; margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+        .urgency-list { display: flex; flex-direction: column; gap: 12px; }
+        .urgency-item { display: flex; align-items: center; padding: 15px; border-radius: 8px; color: white; gap: 15px; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer; }
+        .urgency-critical { background-color: var(--critical); }
+        .urgency-critical:hover { transform: scale(1.03); box-shadow: 0 0 20px var(--critical), 0 0 40px rgba(211, 47, 47, 0.4); z-index: 10; position: relative; }
+        .urgency-warning { background-color: var(--warning); color: #1a1a1a; }
+        .urgency-warning:hover { transform: scale(1.03); box-shadow: 0 0 20px var(--warning), 0 0 40px rgba(245, 166, 35, 0.4); z-index: 10; position: relative; }
+        .urgency-icon { width: 35px; height: 35px; }
+        .urgency-icon svg { width: 100%; height: 100%; }
+        .urgency-id { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 16px; margin: 0; }
+        .urgency-text { font-family: 'Oswald', sans-serif; font-size: 13px; margin: 0; opacity: 0.9; }
+
+        /* INVENTARIO / LISTAS */
+        #view-listas { display: none; flex-direction: column; gap: 20px; }
+        .inv-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .inv-title { font-family: 'Open Sans Hebrew Condensed', sans-serif; font-size: 32px; font-weight: 700; text-transform: uppercase; margin: 0; }
+        .btn-add { background-color: #32a826; color: white; border: none; padding: 10px 20px; font-family: 'Open Sans Hebrew Condensed', sans-serif; font-weight: 700; font-size: 18px; border-radius: 6px; cursor: pointer; transition: background-color 0.2s, transform 0.1s; display: flex; align-items: center; gap: 5px;}
+        .btn-add:hover { background-color: #2b8c20; transform: scale(1.02); }
+        .btn-add:active { transform: scale(0.98); }
+
+        .inv-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: var(--text-dark); opacity: 0.7; }
+        .empty-x { width: 150px; height: 150px; position: relative; margin-bottom: 20px; }
+        .empty-x::before, .empty-x::after { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background-color: var(--text-dark); }
+        .empty-x::before { transform: rotate(45deg); }
+        .empty-x::after { transform: rotate(-45deg); }
+        .empty-text { font-family: 'Oswald', sans-serif; font-size: 24px; font-weight: 500; text-transform: uppercase; }
+
+        .inv-list { display: flex; flex-direction: column; gap: 20px; }
+        .list-card { background-color: var(--card-bg); border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s; position: relative;}
+        .list-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
+        .list-pc-info { display: flex; flex-direction: column; align-items: center; width: 90px; }
+        .list-pc-svg { width: 60px; height: 60px; margin-bottom: 5px; }
+        .list-pc-id { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 16px; text-align: center; }
+        .list-specs { flex: 1; display: grid; grid-template-columns: max-content 1fr; column-gap: 15px; row-gap: 5px; font-family: 'Oswald', sans-serif; font-size: 15px; align-items: baseline; }
+        .spec-label { font-family: 'Open Sans Hebrew Condensed', sans-serif; font-weight: 700; letter-spacing: 0.5px; color: var(--text-muted); text-transform: uppercase; }
+        .spec-value { color: var(--text-dark); }
+        .list-status-wrapper { width: 90px; display: flex; justify-content: center; }
+        .status-pill { width: 70px; height: 35px; border-radius: 8px; }
+        .pill-green { background-color: #34d399; box-shadow: 0 0 15px rgba(52, 211, 153, 0.4); }
+        .pill-yellow { background-color: #ffca28; box-shadow: 0 0 15px rgba(255, 202, 40, 0.4); }
+        .pill-red { background-color: #ef5350; box-shadow: 0 0 15px rgba(239, 83, 80, 0.4); }
+        .list-actions { display: flex; flex-direction: column; gap: 10px; margin-left: 10px;}
+        .action-btn { background: none; border: none; cursor: pointer; width: 32px; height: 32px; padding: 4px; transition: transform 0.2s; }
+        .action-btn:hover { transform: scale(1.15); }
+        .action-btn svg { width: 100%; height: 100%; }
+
+        /* ALERTAS */
+        .alert-card { color: white; border-radius: 8px; padding: 20px; margin-bottom: 15px; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: box-shadow 0.3s ease, transform 0.2s ease; }
+        .alert-card.warning { background-color: var(--alert-card-bg); }
+        .alert-card.warning:hover { box-shadow: 0 0 15px rgba(139, 105, 20, 0.8); transform: translateY(-2px); }
+        .alert-card.critical { background-color: var(--alert-card-crit); }
+        .alert-card.critical:hover { box-shadow: 0 0 15px rgba(183, 28, 28, 0.8); transform: translateY(-2px); }
+        
+        .alert-card .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+        .alert-card .dot.yellow { background-color: var(--warning); box-shadow: 0 0 10px var(--warning); }
+        .alert-card .dot.red { background-color: var(--critical); box-shadow: 0 0 10px var(--critical); }
+        .alert-badge { background: white; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; font-family: 'Oswald', sans-serif; letter-spacing: 1px;}
+        
+        .alert-btn { font-family: 'Oswald', sans-serif; font-weight: bold; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; text-transform: uppercase; transition: all 0.2s; font-size: 13px;}
+        .alert-btn:active { transform: scale(0.96); }
+        
+        .alert-btn-warn-primary { background: var(--alert-btn-yellow); color: #1a1a1a; }
+        .alert-btn-warn-primary:hover { box-shadow: 0 0 12px var(--alert-btn-yellow); filter: brightness(1.1); }
+        .alert-btn-warn-secondary { background: white; color: var(--alert-card-bg); }
+        .alert-btn-warn-secondary:hover { box-shadow: 0 0 12px rgba(255,255,255,0.8); filter: brightness(1.1); }
+
+        .alert-btn-crit-primary { background: white; color: var(--alert-card-crit); }
+        .alert-btn-crit-primary:hover { box-shadow: 0 0 12px rgba(255,255,255,0.8); filter: brightness(1.1); }
+        .alert-btn-crit-secondary { background: transparent; color: white; border: 2px solid white; padding: 6px 13px; }
+        .alert-btn-crit-secondary:hover { background: white; color: var(--alert-card-crit); box-shadow: 0 0 12px rgba(255,255,255,0.8); }
+
+        /* ==========================================
+           MODALES GENERALES
+           ========================================== */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 1000; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .modal-container { 
+            /* Efecto Glassmorfismo */
+            background: rgba(222, 222, 222, 0.75); 
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            
+            border-radius: 16px; 
+            width: 90%; 
+            max-width: 600px; 
+            max-height: 90vh; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25); 
+            transform: translateY(20px); 
+            transition: transform 0.3s ease; 
+            position: relative; 
+            overflow: hidden; 
+        }
+
+        /* Glassmorfismo Modales en Modo Oscuro */
+        body.dark-mode .modal-container {
+            background: rgba(42, 42, 42, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .modal-overlay.show .modal-container { transform: translateY(0); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 30px; border-bottom: 1px solid var(--border-color); }
+        .modal-title { font-family: 'Open Sans Hebrew Condensed', sans-serif; font-size: 24px; font-weight: 700; margin: 0; text-transform: uppercase; color: var(--text-dark); }
+        .btn-close { background: none; border: 2px solid var(--text-dark); color: var(--text-dark); border-radius: 50%; width: 30px; height: 30px; font-family: 'Oswald', sans-serif; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: background-color 0.2s; }
+        .btn-close:hover { background-color: var(--text-dark); color: var(--modal-bg); }
+        .modal-body { padding: 20px 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .modal-section { background-color: var(--modal-section-bg); border-radius: 12px; padding: 15px 20px; border: 1px solid var(--border-color); box-shadow: 0 6px 12px rgba(0,0,0,0.2); }
+        .modal-section-title { font-family: 'Open Sans Hebrew Condensed', sans-serif; font-size: 16px; font-weight: 700; margin: 0 0 15px 0; text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;}
+        .form-grid { display: grid; grid-template-columns: max-content 1fr; column-gap: 20px; row-gap: 12px; align-items: center; }
+        .form-grid.cols-2 { grid-template-columns: max-content 1fr max-content 1fr; }
+        .form-label { font-family: 'Open Sans Hebrew Condensed', sans-serif; font-weight: 700; font-size: 14px; text-transform: uppercase; }
+        .form-input-box { position: relative; width: 100%; }
+        .modal-input { width: 100%; background-color: var(--modal-input-bg); color: var(--text-dark); border: 2px solid transparent; border-radius: 20px; padding: 8px 15px; font-family: 'Oswald', sans-serif; font-size: 14px; transition: border-color 0.2s; }
+        .modal-input:focus { border-color: var(--purple-accent); outline: none; }
+        .modal-input::placeholder { color: var(--text-muted); opacity: 0.7; }
+        .modal-input.error { border-color: var(--critical); }
+        .error-text { color: var(--critical); font-size: 12px; position: absolute; bottom: -18px; left: 10px; font-family: 'Oswald', sans-serif; display: none; }
+        .modal-input.error + .error-text { display: block; }
+        select.modal-input option:hover { background-color: var(--purple-accent); color: white; }
+        select.modal-input:focus option:checked { background: var(--purple-accent) linear-gradient(0deg, var(--purple-accent) 0%, var(--purple-accent) 100%); color: white; }
+        textarea.modal-input { resize: vertical; min-height: 80px; border-radius: 12px; }
+        .modal-footer { display: flex; justify-content: center; gap: 30px; padding: 20px 30px; border-top: 1px solid var(--border-color); }
+        .btn-modal { padding: 10px 25px; border-radius: 8px; font-family: 'Open Sans Hebrew Condensed', sans-serif; font-weight: 700; font-size: 16px; text-transform: uppercase; cursor: pointer; border: none; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+        .btn-modal:active { transform: scale(0.95); }
+        
+        .btn-cancel { background-color: #a0a0a0; color: white; }
+        .btn-cancel:hover { box-shadow: 0 0 15px rgba(160, 160, 160, 0.9); filter: brightness(0.9); }
+        .btn-save { background-color: var(--purple-accent); color: white; }
+        .btn-save:hover { box-shadow: 0 0 15px var(--purple-accent); filter: brightness(0.9); }
+        .btn-danger { background-color: var(--critical); color: white; }
+
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; row-gap: 8px; font-family: 'Oswald', sans-serif; font-size: 14px; }
+        .info-val { color: var(--text-muted); font-size: 13px;}
+        .delete-text-center { text-align: center; font-family: 'Open Sans Hebrew Condensed', sans-serif; font-size: 20px; font-weight: 700; margin: 20px 0; text-transform: uppercase;}
+
+        /* MODALES DE ALERTAS ESPECÍFICOS */
+        .alert-details-header { display: flex; align-items: center; gap: 15px; font-family: 'Oswald', sans-serif; font-size: 20px; font-weight: bold; width: 100%; }
+        .alert-warning-banner { border-radius: 8px; padding: 15px; display: flex; align-items: center; gap: 15px; font-family: 'Open Sans Hebrew Condensed', sans-serif; font-weight: bold; font-size: 14px; text-transform: uppercase; margin-bottom: 5px; transition: all 0.3s ease; }
+        .spec-chip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .spec-chip { background-color: var(--chip-bg); padding: 10px 15px; border-radius: 8px; font-family: 'Oswald', sans-serif; font-size: 13px; display: flex; flex-direction: column; border: 1px solid var(--border-color); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .spec-chip span { font-family: 'Open Sans Hebrew Condensed', sans-serif; font-weight: bold; text-transform: uppercase; color: var(--text-muted); font-size: 12px; }
+        .history-list { font-family: 'Oswald', sans-serif; font-size: 13px; }
+        .history-list p { margin: 0 0 5px 0; padding-bottom: 5px; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .history-list p span { font-size: 11px; color: var(--text-muted); }
+
+        /* ==========================================
+           VISTA REPORTES
+           ========================================== */
+        .rep-section { margin-bottom: 30px; }
+        .rep-section-title { font-family: 'Open Sans Hebrew Condensed', sans-serif; font-size: 18px; font-weight: 700; text-transform: uppercase; margin: 0 0 15px 0; }
+        
+        /* Radio Cards */
+        .rep-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .rep-card { background-color: var(--rep-card-bg); border-radius: 12px; padding: 20px; text-align: center; border: 2px solid var(--rep-card-border); cursor: pointer; transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .rep-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+        .rep-card.selected { border-color: var(--purple-accent); background-color: var(--sidebar-hover); box-shadow: 0 6px 15px rgba(176, 112, 183, 0.3); }
+        .rep-card-icon { font-size: 30px; margin-bottom: 10px; }
+        .rep-card-title { font-family: 'Open Sans Hebrew Condensed', sans-serif; font-weight: 700; font-size: 18px; margin-bottom: 5px; }
+        .rep-card-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 15px; min-height: 40px; }
+        .rep-badge { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 13px; padding: 4px 12px; border-radius: 20px; display: inline-block; letter-spacing: 0.5px; }
+        .badge-purple { background-color: var(--rep-badge-inv); color: var(--rep-badge-inv-txt); }
+        .badge-red { background-color: var(--rep-badge-crit); color: var(--rep-badge-crit-txt); }
+        .badge-green { background-color: var(--rep-badge-warn); color: var(--rep-badge-warn-txt); }
+
+        /* Filtros */
+        .filter-container { background-color: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); }
+        .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .date-input-wrap { position: relative; }
+        .date-input { width: 100%; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--input-bg); color: var(--text-dark); font-family: 'Oswald', sans-serif; font-size: 14px; outline: none; }
+        .date-input.error { border-color: var(--critical); }
+        .date-error-msg { color: var(--critical); font-size: 12px; position: absolute; bottom: -18px; left: 5px; font-family: 'Oswald', sans-serif; display: none; }
+        .date-input.error + .date-error-msg { display: block; }
+        
+        .status-chip { background-color: var(--input-bg); color: var(--text-muted); padding: 6px 16px; border-radius: 20px; font-family: 'Open Sans Hebrew Condensed', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; user-select: none; border: 1px solid var(--border-color); display: inline-block; margin-right: 10px; margin-bottom: 10px;}
+        .status-chip.active[data-status="green"] { background-color: var(--success-light); color: white; border-color: var(--success-light); }
+        .status-chip.active[data-status="yellow"] { background-color: var(--warning); color: #1a1a1a; border-color: var(--warning); }
+        .status-chip.active[data-status="red"] { background-color: var(--critical); color: white; border-color: var(--critical); }
+        .status-chip:hover { filter: brightness(0.9); }
+
+        /* Export Buttons */
+        .export-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .btn-export { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--card-bg); color: var(--text-dark); font-family: 'Open Sans Hebrew Condensed', sans-serif; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-export:hover { background-color: var(--sidebar-hover); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+        /* Report Modals Specifics */
+        .export-modal-layout { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .export-toggles { width: 100%; display: flex; flex-direction: column; gap: 15px; }
+        .export-toggle-row { display: flex; justify-content: space-between; align-items: center; font-family: 'Open Sans Hebrew Condensed', sans-serif; font-size: 16px; }
+        .export-icon-large { width: 120px; height: 120px; display: flex; justify-content: center; align-items: center; }
+        .export-icon-large svg { width: 100%; height: 100%; }
+
+        .btn-download-pdf { background-color: #333; color: white; width: 100%; }
+        .btn-download-pdf:hover { background-color: #1a1a1a; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+        .btn-download-excel { background-color: #207245; color: white; width: 100%; }
+        .btn-download-excel:hover { background-color: #165331; box-shadow: 0 0 15px rgba(32,114,69,0.5); }
+
+        /* ==========================================
+           TOAST NOTIFICATIONS
+           ========================================== */
+        .toast-container { position: fixed; top: 80px; right: 30px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background-color: var(--success); color: white; padding: 15px 25px; border-radius: 8px; font-family: 'Open Sans Hebrew Condensed', sans-serif; font-weight: 700; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 10px; animation: slideInRight 0.3s ease forwards; }
+        .toast.fade-out { animation: fadeOutRight 0.3s ease forwards; }
+        @keyframes slideInRight { from {transform: translateX(100%); opacity: 0;} to {transform: translateX(0); opacity: 1;} }
+        @keyframes fadeOutRight { from {transform: translateX(0); opacity: 1;} to {transform: translateX(100%); opacity: 0;} }
+
+        /* ANIMACIÓN DE BÚSQUEDA */
+        @keyframes highlightPulse {
+            0% { box-shadow: 0 0 0 0 rgba(176, 112, 183, 0.8); transform: scale(1.02); background-color: var(--purple-light); }
+            100% { box-shadow: 0 0 30px 10px rgba(176, 112, 183, 0); transform: scale(1); background-color: var(--card-bg); }
+        }
+        .highlight-glow {
+            animation: highlightPulse 2.5s ease-out;
+            border: 2px solid var(--purple-accent) !important;
+            z-index: 10;
+        }
+
+        /* ==========================================
+           LOADER ANIMADO JADK
+           ========================================== */
+        #global-loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center;
+            flex-direction: column; z-index: 9999;
+        }
+        #global-loader.show {
+            display: flex;
+        }
+        .jadk-spinner {
+            width: 120px; height: 120px;
+            animation: pulse-spin 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        @keyframes pulse-spin {
+            0% { transform: scale(0.9) rotate(0deg); opacity: 0.8; }
+            50% { transform: scale(1.1) rotate(180deg); opacity: 1; }
+            100% { transform: scale(0.9) rotate(360deg); opacity: 0.8; }
+        }
+        .loader-text {
+            margin-top: 20px;
+            font-family: 'Oswald', sans-serif;
+            color: white;
+            font-size: 24px;
+            letter-spacing: 5px;
+            animation: blink 1.5s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* ==========================================
+           FLATPICKR CUSTOMIZATION (CALENDARIO)
+           ========================================== */
+        .flatpickr-calendar {
+            background: var(--modal-bg) !important;
+            border: 1px solid var(--border-color) !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important;
+        }
+        .flatpickr-day.selected {
+            background: var(--purple-accent) !important;
+            border-color: var(--purple-accent) !important;
+        }
+        .flatpickr-month, .flatpickr-weekday {
+            color: var(--text-dark) !important;
+            fill: var(--text-dark) !important;
+        }
+        span.flatpickr-weekday {
+            color: var(--text-muted) !important;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+</head>
+<body>
+
+    <!-- ==========================================
+         LOADER GLOBAL
+         ========================================== -->
+    <div id="global-loader">
+        <svg class="jadk-spinner" viewBox="260 20 160 160" role="img" xmlns="http://www.w3.org/2000/svg">
+            <rect x="295" y="44" width="90" height="90" rx="13" style="fill:rgb(83, 74, 183);stroke:none;"/>
+            <rect x="288" y="58" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="288" y="73" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="288" y="88" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="288" y="103" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="385" y="58" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="385" y="73" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="385" y="88" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="385" y="103" width="7" height="9" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="307" y="37" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="323" y="37" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="339" y="37" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="355" y="37" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="307" y="134" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="323" y="134" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="339" y="134" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="355" y="134" width="9" height="7" rx="2" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            <rect x="304" y="53" width="72" height="72" rx="7" style="fill:rgb(60, 52, 137);stroke:none;"/>
+            
+            <line x1="316" y1="64" x2="316" y2="76" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+            <line x1="316" y1="76" x2="328" y2="76" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+            <line x1="364" y1="64" x2="364" y2="76" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+            <line x1="364" y1="76" x2="352" y2="76" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+            <line x1="316" y1="114" x2="316" y2="102" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+            <line x1="316" y1="102" x2="328" y2="102" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+            <line x1="364" y1="114" x2="364" y2="102" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+            <line x1="364" y1="102" x2="352" y2="102" stroke-width="1.5" stroke-linecap="round" fill="none" style="stroke:rgb(175, 169, 236);"/>
+            
+            <circle cx="316" cy="64" r="2.5" style="fill:rgb(175, 169, 236);stroke:none;"/>
+            <circle cx="364" cy="64" r="2.5" style="fill:rgb(175, 169, 236);stroke:none;"/>
+            <circle cx="316" cy="114" r="2.5" style="fill:rgb(175, 169, 236);stroke:none;"/>
+            <circle cx="364" cy="114" r="2.5" style="fill:rgb(175, 169, 236);stroke:none;"/>
+            
+            <path d="M340 100 C340 100 324 90 324 80 C324 74.5 328.5 70 334 70 C337 70 340 73 340 73 C340 73 343 70 346 70 C351.5 70 356 74.5 356 80 C356 90 340 100 340 100Z" style="fill:rgb(29, 158, 117);stroke:none;"/>
+            <polyline points="314,111 321,111 324,105 327,117 330,105 333,111 347,111 350,107 353,111 366,111" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="stroke:rgb(29, 158, 117);"/>
+        </svg>
+        <div class="loader-text">CARGANDO...</div>
+    </div>
+
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') { window.location.href = 'login.html'; }
+        if (localStorage.getItem('theme') === 'dark') { document.body.classList.add('dark-mode'); }
+    </script>
+
+    <header class="top-header">
+        <a href="index.html" class="logo-link" title="Ir al Inicio">
+            <svg class="header-logo-svg" viewBox="0 0 320 160" xmlns="http://www.w3.org/2000/svg">
+              <title>JADK CARE logo texto</title>
+              <text x="160" y="80" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="72" font-weight="700" fill="#CECBF6" letter-spacing="12">JADK</text>
+              <line x1="30" y1="92" x2="290" y2="92" stroke="#1D9E75" stroke-width="2" stroke-linecap="round"/>
+              <text x="160" y="140" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="44" font-weight="300" fill="#1D9E75" letter-spacing="18">CARE</text>
+            </svg>
+        </a>
+
+        <div class="header-controls">
+            <!-- Buscador en Tiempo Real -->
+            <div style="position: relative; display: flex; align-items: center; gap: 10px;">
+                <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" class="search-input" id="main-search-input" placeholder="Buscar ID, IP o MAC..." oninput="handleLiveSearch(this.value)" autocomplete="off">
+                
+                <!-- Menú desplegable de resultados -->
+                <div class="settings-dropdown" id="searchDropdown" style="top: 40px; right: 0; width: 250px; left: auto; max-height: 300px; overflow-y: auto;">
+                    <!-- Los resultados se inyectan aquí -->
+                </div>
+            </div>
+            
+            <!-- ENVOLTORIO DE AJUSTES BLINDADO CON EL SVG CORREGIDO -->
+            <div class="settings-wrapper">
+                <svg class="header-icon" onclick="toggleSettings()" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Ajustes">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                
+                <div class="settings-dropdown" id="settingsDropdown">
+                    <a href="perfil.html" class="dropdown-item">Mi Perfil</a>
+                    <a href="#" id="menu-pref" onclick="abrirModalAjustes('modal-preferences')" class="dropdown-item">Preferencias del Sistema</a>
+                    <a href="#" id="menu-notif" onclick="abrirModalAjustes('modal-notifications')" class="dropdown-item">Notificaciones</a>
+                    <div class="dropdown-item">
+                        <span>Modo Oscuro</span>
+                        <label class="switch">
+                          <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+                          <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" onclick="cerrarSesionApp()" class="dropdown-item text-danger">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> 
+                        Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+
+            <a href="perfil.html" style="text-decoration: none; display: block; flex-shrink: 0; min-width: 26px;" title="Configuración de Cuenta">
+                <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </a>
+        </div>
+    </header>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <div class="content-area">
+        <aside class="sidebar">
+            <a href="#" class="menu-item" onclick="switchMainView('inventario', event)">
+                <div class="menu-icon-container">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="6" y="6" width="12" height="12" rx="2" />
+                        <rect x="9" y="9" width="6" height="6" />
+                        <path d="M6 9H3M6 15H3M21 9h-3M21 15h-3M9 6V3M15 6V3M9 21v-3M15 21v-3" />
+                    </svg>
+                </div>
+                <span class="menu-text font-title">INVENTARIO</span>
+            </a>
+            
+            <a href="#" class="menu-item" onclick="switchMainView('alertas', event)">
+                <div class="menu-icon-container">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 20h20L12 2z" />
+                        <path d="M12 9v4" />
+                        <circle cx="12" cy="16" r="0.5" fill="currentColor" />
+                    </svg>
+                </div>
+                <span class="menu-text font-title">ALERTAS</span>
+                <div class="badge" id="sidebar-alert-badge" style="display: none;">0</div>
+            </a>
+            
+            <a href="#" class="menu-item" id="menu-reportes" onclick="switchMainView('reportes', event)">
+                <div class="menu-icon-container">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                        <rect x="8" y="2" width="8" height="4" rx="1" />
+                        <line x1="8" y1="11" x2="16" y2="11" />
+                        <line x1="8" y1="16" x2="16" y2="16" />
+                    </svg>
+                </div>
+                <span class="menu-text font-title">REPORTES</span>
+            </a>
+        </aside>
+
+        <main class="main-workspace">
+            
+            <!-- VISTA A: DASHBOARD -->
+            <div id="view-dashboard" class="view-section active-view">
+                <div class="tabs" id="main-tabs">
+                    <div class="tab active font-title" data-target="inicio">INICIO</div>
+                    <div class="tab inactive font-title" data-target="todos">TODOS LOS<br>EQUIPOS</div>
+                    <div class="tab inactive font-title" data-target="bueno">EN BUEN ESTADO</div>
+                    <div class="tab inactive font-title" data-target="proximo">MANTENIMIENTOS<br>PRÓXIMOS</div>
+                    <div class="tab inactive font-title" data-target="critico">ALERTAS CRÍTICAS</div>
+                </div>
+
+                <div class="dashboard-panel">
+                    <div id="view-inicio">
+                        <h1 class="welcome-text font-title">Buenos días, Administrador.</h1>
+
+                        <section class="summary-container">
+                            <div class="card"><div class="card-icon"><svg viewBox="0 0 64 64" fill="none"><rect x="36" y="8" width="22" height="48" rx="4" fill="#3949AB" stroke="var(--border-color)" stroke-width="3"/><circle cx="47" cy="20" r="3" fill="#FFEB3B" stroke="var(--border-color)" stroke-width="2"/><circle cx="47" cy="30" r="3" fill="#FFEB3B" stroke="var(--border-color)" stroke-width="2"/><rect x="42" y="46" width="2" height="6" rx="1" fill="var(--border-color)"/><rect x="47" y="46" width="2" height="6" rx="1" fill="var(--border-color)"/><rect x="52" y="46" width="2" height="6" rx="1" fill="var(--border-color)"/><rect x="6" y="16" width="34" height="24" rx="4" fill="#03A9F4" stroke="var(--border-color)" stroke-width="3"/><path d="M14 40 L14 48 M32 40 L32 48 M16 48 L30 48" stroke="var(--border-color)" stroke-width="3" stroke-linecap="round"/><path d="M12 48 L34 48" stroke="var(--border-color)" stroke-width="4" stroke-linecap="round"/><path d="M10 22 L18 30 M14 20 L22 28" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg></div><p class="card-value" id="dash-total">0</p><span class="card-label font-title">Total de Equipos</span></div>
+                            <div class="card"><div class="card-icon"><svg viewBox="0 0 64 64" fill="none"><rect x="4" y="4" width="56" height="56" rx="16" fill="#32CD32"/><path d="M18 32 L28 42 L46 22" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg></div><p class="card-value" id="dash-ok">0</p><span class="card-label font-title">Operativos</span></div>
+                            <div class="card"><div class="card-icon"><svg viewBox="0 0 64 64" fill="none"><path d="M32 6 C34 6 35 7 36 9 L58 50 C59 52 58 55 55 55 H9 C6 55 5 52 6 50 L28 9 C29 7 30 6 32 6 Z" fill="#FFC107"/><circle cx="32" cy="46" r="3.5" fill="#2C3E50"/><path d="M29 22 L30 38 H34 L35 22 Z" fill="#2C3E50"/></svg></div><p class="card-value" id="dash-warn">0</p><span class="card-label font-title">Mantenimiento Próximo</span></div>
+                            <div class="card"><div class="card-icon"><svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="28" fill="#E53935"/><path d="M32 4 A28 28 0 0 1 60 32 A28 28 0 0 0 32 8 A28 28 0 0 0 4 32 A28 28 0 0 1 32 4 Z" fill="#EF5350"/><circle cx="32" cy="46" r="4" fill="#fff"/><path d="M28 16 L29 38 H35 L36 16 Z" fill="#fff"/></svg></div><p class="card-value" id="dash-crit">0</p><span class="card-label font-title">Crítico</span></div>
+                        </section>
+
+                        <section class="bottom-grid">
+                            <div class="chart-panel">
+                                <h2 class="chart-title font-title" style="color: var(--purple-accent);">ESTADO GENERAL</h2>
+                                <div class="chart-legend">
+<span class="legend-item" style="color: #32CD32;"><span class="legend-dot" style="background: #32CD32;"></span>Operativa <span id="perc-ok">0%</span></span>                                    <span class="legend-item" style="color: var(--warning);"><span class="legend-dot" style="background: var(--warning);"></span>Próximo <span id="perc-warn">0%</span></span>
+                                    <span class="legend-item" style="color: var(--critical);"><span class="legend-dot" style="background: var(--critical);"></span>Crítica <span id="perc-crit">0%</span></span>
+                                </div>
+                                <div class="chart-center-wrapper">
+                                    <div class="donut-container">
+                                        <svg width="220" height="220" viewBox="0 0 42 42" id="donut-svg">
+                                            <circle class="donut-segment segment-operative" cx="21" cy="21" r="15.915" stroke="#32CD32" stroke-dasharray="${pOk} ${100-pOk}" stroke-dashoffset="0" data-title="${Math.round(pOk)}% OPERATIVO" data-desc="${ok} equipos en buen estado"></circle>
+                                        </svg>
+                                        <div class="donut-inner">
+                                            <p id="donut-text-top">equipos</p>
+                                            <p id="donut-text-bottom" id="donut-center-total">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="urgency-panel">
+                                <h2 class="urgency-title font-title">TOP 3 URGENCIAS</h2>
+                                <div class="urgency-list" id="dash-urgency-list">
+                                    <p style="text-align: center; color: var(--text-muted); font-style: italic;">No hay urgencias reportadas.</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <div id="view-listas" style="display: none; flex-direction: column; gap: 20px;"></div>
+                </div>
+            </div>
+
+            <!-- VISTA B: INVENTARIO -->
+            <div id="view-inventario" class="view-section">
+                <div class="inv-header">
+                    <h1 class="inv-title">INVENTARIO DE EQUIPOS</h1>
+                    <button class="btn-add" onclick="openAddModal()">AGREGAR EQUIPO [+]</button>
+                </div>
+                <div id="inv-empty-state" class="inv-empty-state">
+                    <div class="empty-x"></div>
+                    <div class="empty-text">NO HAY EQUIPOS AGREGADOS!!</div>
+                </div>
+                <div id="inv-list" class="inv-list" style="display: none;"></div>
+            </div>
+
+            <!-- VISTA C: ALERTAS -->
+            <div id="view-alertas" class="view-section">
+                <div class="inv-header">
+                    <h1 class="inv-title">CENTRO DE ALERTAS</h1>
+                </div>
+                <div id="alerts-empty-state" class="inv-empty-state">
+                    <div class="empty-x"></div>
+                    <div class="empty-text">NO HAY ALERTAS POR EL MOMENTO!!</div>
+                </div>
+                <div id="alerts-list" class="inv-list" style="display: none;"></div>
+            </div>
+
+            <!-- VISTA D: REPORTES -->
+            <div id="view-reportes" class="view-section">
+                <div class="inv-header" style="align-items: flex-start; flex-direction: column; margin-bottom: 25px;">
+                    <h1 class="inv-title">Generación de reportes</h1>
+                    <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 15px;">Exporta información del sistema en PDF o Excel</p>
+                </div>
+
+                <div class="rep-section">
+                    <h3 class="rep-section-title">REPORTES RÁPIDOS</h3>
+                    <div class="rep-cards-grid">
+                        <div class="rep-card selected" onclick="selectReportCard(this, 'inv')">
+                            <div class="rep-card-icon">📄</div>
+                            <div class="rep-card-title">Inventario General</div>
+                            <div class="rep-card-desc">Lista completa del hardware registrado en el sistema.</div>
+                            <div class="rep-badge badge-purple" id="rep-badge-inv">0 EQUIPOS</div>
+                        </div>
+                        <div class="rep-card" onclick="selectReportCard(this, 'crit')">
+                            <div class="rep-card-icon">🚨</div>
+                            <div class="rep-card-title">Equipos para Reemplazo</div>
+                            <div class="rep-card-desc">Equipos en estado Crítico sin posibilidad de recuperación.</div>
+                            <div class="rep-badge badge-red" id="rep-badge-crit">0 CRÍTICOS</div>
+                        </div>
+                        <div class="rep-card" onclick="selectReportCard(this, 'warn')">
+                            <div class="rep-card-icon">🛠️</div>
+                            <div class="rep-card-title">Mantenimientos del Mes</div>
+                            <div class="rep-card-desc">Resumen de bitácoras cerradas en el mes actual.</div>
+                            <div class="rep-badge badge-green" id="rep-badge-mnt">0 REGISTROS</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rep-section filter-container">
+                    <h3 class="rep-section-title">FILTROS PERSONALIZADOS</h3>
+                    
+                    <div class="filter-grid">
+                        <div class="date-input-wrap">
+                            <label class="form-label" style="display: block; margin-bottom: 5px; text-transform: none;">Desde</label>
+                            <input type="text" id="rep-date-from" class="date-input" placeholder="SELECCIONAR FECHA..." onchange="validateDates()">
+                            <span class="date-error-msg" id="err-date-from">Fecha inválida (Min: 2000)</span>
+                        </div>
+                        <div class="date-input-wrap">
+                            <label class="form-label" style="display: block; margin-bottom: 5px; text-transform: none;">Hasta</label>
+                            <input type="text" id="rep-date-to" class="date-input" placeholder="SELECCIONAR FECHA..." onchange="validateDates()">
+                            <span class="date-error-msg" id="err-date-to">Fecha "Hasta" debe ser mayor o igual a "Desde"</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label class="form-label" style="display: block; margin-bottom: 5px; text-transform: none;">Ubicacion / Laboratorio</label>
+                        <select id="rep-location" class="date-input" onchange="clearQuickReports(); updateFooterSummary();">
+                            <option value="todas">TODAS LAS UBICACIONES</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="form-label" style="display: block; margin-bottom: 5px; text-transform: none;">Estado del equipo</label>
+                        <div id="rep-status-chips">
+                            <div class="status-chip" data-status="green" onclick="toggleFilterChip(this)">OPERATIVO</div>
+                            <div class="status-chip" data-status="yellow" onclick="toggleFilterChip(this)">PROXIMO MANTENIMIENTO</div>
+                            <div class="status-chip" data-status="red" onclick="toggleFilterChip(this)">CRÍTICO</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rep-section">
+                    <h3 class="rep-section-title" style="margin-bottom: 5px;">Exportar reporte</h3>
+                    <p style="margin: 0 0 15px 0; font-size: 14px; color: var(--text-muted);">Formato de salida</p>
+                    <div class="export-grid">
+                        <button class="btn-export" onclick="openExportModal('pdf')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> 
+                            EXPORTAR A PDF
+                        </button>
+                        <button class="btn-export" onclick="openExportModal('excel')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="17"></line><line x1="8" y1="17" x2="16" y2="13"></line></svg> 
+                            EXPORTAR A EXCEL
+                        </button>
+                    </div>
+                </div>
+
+                <div id="rep-footer-summary" style="text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 10px; margin-bottom: 20px;">
+                    Filtros: Todas las ubicaciones · ninguno · Sin fechas límite
+                </div>
+            </div>
+            
+        </main>
+    </div>
+
+    <!-- ==========================================
+         MODALES DE INVENTARIO Y ALERTAS (OCULTOS)
+         ========================================== -->
+    <div class="modal-overlay" id="modal-form-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-form-title">REGISTRAR NUEVO EQUIPO</h2>
+                <button class="btn-close" type="button" onclick="closeModal('modal-form-overlay')">X</button>
+            </div>
+            <div class="modal-body">
+                <form id="equipment-form" onsubmit="saveEquipment(event)">
+                    <input type="hidden" id="edit-mode-id" value="">
+                    
+                    <div class="modal-section" style="margin-bottom: 15px;">
+                        <div class="form-grid">
+                            <label class="form-label">ASIGNAR ID</label>
+                            <div class="form-input-box">
+                                <input type="text" class="modal-input" id="f-id" placeholder="(EJ. PC-LAB1-016)">
+                                <span class="error-text">Requerido</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-section">
+                        <h3 class="modal-section-title">PROCESAMIENTO</h3>
+                        <div class="form-grid">
+                            <label class="form-label">CPU</label>
+                            <div class="form-input-box"><input type="text" class="modal-input" id="f-cpu" placeholder="(EJ. RYZEN 5 5600G)"><span class="error-text">Requerido</span></div>
+                            <label class="form-label">MOTHERBOARD</label>
+                            <div class="form-input-box"><input type="text" class="modal-input" id="f-mobo" placeholder="(EJ. ASUS A520M A-II)"><span class="error-text">Requerido</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-section">
+                        <h3 class="modal-section-title">MEMORIA Y GRÁFICOS</h3>
+                        <div class="form-grid">
+                            <label class="form-label">RAM</label>
+                            <div class="form-input-box"><input type="text" class="modal-input" id="f-ram" placeholder="SELECCIONE CAPACIDAD"><span class="error-text">Requerido</span></div>
+                            <label class="form-label">GPU</label>
+                            <div class="form-input-box"><input type="text" class="modal-input" id="f-gpu" placeholder="(EJ. NVIDIA RTX 3060 TI 12 GB)"><span class="error-text">Requerido</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-section" id="storage-section">
+                        <h3 class="modal-section-title" style="justify-content: space-between;">
+                            ALMACENAMIENTO
+                            <button type="button" onclick="addStorageUnit()" style="background:none; border:none; color:var(--purple-accent); font-family:'Open Sans Hebrew Condensed', sans-serif; font-weight:bold; cursor:pointer; font-size: 14px; transition: filter 0.2s;">[+] AGREGAR UNIDAD</button>
+                        </h3>
+                        <div id="storage-container">
+                            <!-- Aquí se inyectan las unidades de almacenamiento -->
+                        </div>
+                    </div>
+                    
+                    <div class="modal-section">
+                        <h3 class="modal-section-title">CONECTIVIDAD</h3>
+                        <div class="form-grid">
+                            <label class="form-label">MAC</label>
+                            <div class="form-input-box"><input type="text" class="modal-input" id="f-mac" placeholder="(EJ. 00:1A:2B:3C:4D:5D)"><span class="error-text">Requerido</span></div>
+                            <label class="form-label">IP</label>
+                            <div class="form-input-box"><input type="text" class="modal-input" id="f-ip" placeholder="(EJ. 172.25.0.45)"><span class="error-text">Requerido</span></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal btn-cancel" onclick="closeModal('modal-form-overlay')">CANCELAR</button>
+                <button type="submit" form="equipment-form" class="btn-modal btn-save">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    GUARDAR EQUIPO
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-info-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div>
+                    <div style="font-family: 'Open Sans Hebrew Condensed', sans-serif; font-size: 12px; text-transform: uppercase;">ESPECIFICACIONES TÉCNICAS</div>
+                    <h2 class="modal-title" id="info-id" style="font-family: 'Oswald', sans-serif; font-size: 28px;">...</h2>
+                </div>
+                <button class="btn-close" type="button" onclick="closeModal('modal-info-overlay')">X</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h3 class="modal-section-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>PROCESAMIENTO</h3>
+                    <div class="info-grid"><span class="form-label">CPU</span> <span class="info-val" id="info-cpu">...</span><span class="form-label">MOTHERBOARD</span> <span class="info-val" id="info-mobo">...</span></div>
+                </div>
+                <div class="modal-section">
+                    <h3 class="modal-section-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4"></path><path d="M14 12h4"></path></svg>MEMORIA Y GRÁFICOS</h3>
+                    <div class="info-grid"><span class="form-label">RAM</span> <span class="info-val" id="info-ram">...</span><span class="form-label">GPU</span> <span class="info-val" id="info-gpu">...</span></div>
+                </div>
+                <div class="modal-section">
+                    <h3 class="modal-section-title">ALMACENAMIENTO</h3>
+                    <div class="info-grid" id="info-storage-grid">
+                        <!-- Llenado dinámico -->
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h3 class="modal-section-title">CONECTIVIDAD</h3>
+                    <div class="info-grid"><span class="form-label">MAC</span> <span class="info-val" id="info-mac">...</span><span class="form-label">IP</span> <span class="info-val" id="info-ip">...</span></div>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: flex-end;"><button type="button" class="btn-modal btn-save" onclick="closeModal('modal-info-overlay')">CERRAR</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-delete-overlay">
+        <div class="modal-container" style="max-width: 450px;">
+            <div class="modal-body" style="padding: 40px 30px;">
+                <input type="hidden" id="delete-target-id">
+                <h2 class="delete-text-center">¿ELIMINAR EQUIPO?<br><span id="delete-display-id" style="color: var(--purple-accent);">...</span></h2>
+                <p class="delete-text-center" style="font-size: 16px; font-weight: 500;">¿ESTÁS SEGURO DE QUE QUIERES ELIMINAR PERMANENTEMENTE ESTE EQUIPO DEL INVENTARIO?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal btn-cancel" onclick="closeModal('modal-delete-overlay')">CANCELAR</button>
+                <button type="button" class="btn-modal btn-danger" onclick="confirmDelete()">ELIMINAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-alert-details">
+        <div class="modal-container" style="max-width: 700px;">
+            <div class="modal-header">
+                <div class="alert-details-header">
+                    <button class="btn-close" style="border:none; width:auto;" onclick="closeModal('modal-alert-details')">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    </button>
+                    <span>| <span id="alert-detail-id">PC-XYZ</span></span>
+                </div>
+                <span class="alert-badge" id="alert-detail-badge" style="background: var(--critical); color: white;">CRÍTICO</span>
+            </div>
+            <div class="modal-body">
+                <div id="alert-detail-banner" class="alert-warning-banner">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    <span id="alert-detail-desc">...</span>
+                </div>
+                <div class="modal-section">
+                    <h3 class="modal-section-title">INFORMACIÓN GENERAL</h3>
+                    <div class="info-grid">
+                        <span class="form-label">ID DEL EQUIPO</span> <span class="info-val" style="text-align: right;" id="alert-gen-id">...</span>
+                        <span class="form-label">UBICACIÓN</span> <span class="info-val" style="text-align: right;" id="alert-gen-ubi">...</span>
+                        <span class="form-label">RESPONSABLE</span> <span class="info-val" style="text-align: right;">ADMINISTRADOR TI</span>
+                        <span class="form-label">ÚLTIMO MANTENIMIENTO</span> <span class="info-val" style="text-align: right;" id="alert-gen-ult">...</span>
+                        <span class="form-label">PRÓXIMO MANTENIMIENTO</span> <span class="info-val" style="text-align: right;" id="alert-gen-prox">...</span>
+                    </div>
+                </div>
+                <div class="modal-section" style="background: transparent; border: none; padding: 0; box-shadow: none;">
+                    <h3 class="modal-section-title" style="margin-bottom: 5px;">ESPECIFICACIONES</h3>
+                    <div class="spec-chip-grid">
+                        <div class="spec-chip"><span>PROCESADOR</span><div id="alert-spec-cpu">...</div></div>
+                        <div class="spec-chip"><span>RAM</span><div id="alert-spec-ram">...</div></div>
+                        <div class="spec-chip"><span>GPU</span><div id="alert-spec-gpu">...</div></div>
+                        <div class="spec-chip"><span>ALMACENAMIENTO</span><div id="alert-spec-store">...</div></div>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h3 class="modal-section-title">HISTORIAL DE MANTENIMIENTOS</h3>
+                    <div class="history-list" id="alert-detail-history">
+                        <!-- Llenado dinámico -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-resolve-alert">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title">REGISTRAR MANTENIMIENTO</h2>
+                <button class="btn-close" type="button" onclick="closeModal('modal-resolve-alert')">X</button>
+            </div>
+            <div class="modal-body">
+                <form id="resolve-form" onsubmit="submitResolveAlert(event)">
+                    <input type="hidden" id="resolve-pc-id">
+                    <p style="font-family: 'Oswald', sans-serif; font-size: 16px; margin: 0 0 20px 0; font-weight: bold;">EQUIPO: <span id="resolve-display-id" style="color: var(--purple-accent);">...</span></p>
+                    <div class="form-grid" style="grid-template-columns: 1fr; row-gap: 5px; margin-bottom: 15px;">
+                        <label class="form-label">TIPO DE MANTENIMIENTO REALIZADO</label>
+                        <div class="form-input-box">
+                            <select class="modal-input" id="r-type" style="cursor: pointer;">
+                                <option value="" disabled selected>SELECCIONAR...</option>
+                                <option value="1">Cambio de pasta térmica</option>
+                                <option value="2">Mantenimiento preventivo</option>
+                                <option value="3">Limpieza general</option>
+                                <option value="4">Revisión de hardware</option>
+                                <option value="5">Actualización de drivers</option>
+                                <option value="6">Reemplazo de componente</option>
+                                <option value="7">Revisión de sistema operativo</option>
+                                <option value="8">Optimización de rendimiento</option>
+                            </select>
+                            <span class="error-text">Requerido</span>
+                        </div>
+                    </div>
+                    <div class="form-grid" style="grid-template-columns: 1fr; row-gap: 5px; margin-bottom: 15px;">
+                        <label class="form-label">OBSERVACIONES</label>
+                        <div class="form-input-box">
+                            <textarea class="modal-input" id="r-obs" placeholder="EJ. SE REALIZO LIMPIEZA COMPLETA, CAMBIO DE PASTA TÉRMICA..."></textarea>
+                            <span class="error-text">Requerido</span>
+                        </div>
+                    </div>
+                    <div class="form-grid" style="grid-template-columns: 1fr; row-gap: 5px;">
+                        <label class="form-label">TÉCNICO RESPONSABLE</label>
+                        <div class="form-input-box">
+                            <input type="text" class="modal-input" id="r-tech" placeholder="NOMBRE DEL TÉCNICO">
+                            <span class="error-text">Requerido</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal btn-cancel" onclick="closeModal('modal-resolve-alert')">CANCELAR</button>
+                <button type="submit" form="resolve-form" class="btn-modal btn-save">CONFIRMAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODALES DE EXPORTAR REPORTES
+         ========================================== -->
+    <div class="modal-overlay" id="modal-export">
+        <div class="modal-container" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="export-title">Configurar exportación</h2>
+                <button class="btn-close" type="button" onclick="closeModal('modal-export')">X</button>
+            </div>
+            <div class="modal-body export-modal-layout">
+                <div class="export-toggles" id="export-options">
+                    <!-- Opciones se llenan via JS -->
+                </div>
+                <div class="export-icon-large" id="export-icon">
+                    <!-- Icono SVG -->
+                </div>
+            </div>
+            <div style="padding: 0 30px; margin-top: -5px; margin-bottom: 15px;">
+                <p id="export-info" style="font-size: 13px; color: var(--text-muted); font-family: 'Oswald', sans-serif; display: none; margin-bottom: 10px;">Los datos se exportarán en formato tabla para que puedas manipularlos directamente en Excel.</p>
+                <label class="form-label">Nombre del archivo</label>
+                <input type="text" class="modal-input" id="export-filename" style="margin-top: 5px;">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal btn-cancel" style="flex: 0.3;" onclick="closeModal('modal-export')">Cancelar</button>
+                <button type="button" class="btn-modal" id="btn-export-download" style="flex: 1;" onclick="downloadReport()">DESCARGAR ARCHIVO</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODALES DE PREFERENCIAS Y NOTIFICACIONES
+         ========================================== -->
+    <div class="modal-overlay" id="modal-preferences">
+        <div class="modal-container" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Preferencias del Sistema</h2>
+                <button class="btn-close" type="button" onclick="closeModal('modal-preferences')">X</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <div class="form-grid" style="grid-template-columns: 1fr; gap: 15px;">
+                        <div>
+                            <label class="form-label">Idioma de la Interfaz</label>
+                            <div class="form-input-box">
+                                <select class="modal-input" style="cursor: pointer;">
+                                    <option value="es" selected>Español (México)</option>
+                                    <option value="en">English (United States)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label">Formato de Fecha</label>
+                            <div class="form-input-box">
+                                <select class="modal-input" style="cursor: pointer;">
+                                    <option value="ddmm" selected>DD/MM/AAAA (Ej. 31/12/2026)</option>
+                                    <option value="mmdd">MM/DD/AAAA (Ej. 12/31/2026)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 15px; border-top: 1px solid var(--border-color);">
+                            <label class="form-label" style="margin:0;">Copias de Seguridad Automáticas</label>
+                            <label class="switch"><input type="checkbox" checked><span class="slider round"></span></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal btn-cancel" style="flex: 0.4;" onclick="closeModal('modal-preferences')">Cancelar</button>
+                <button type="button" class="btn-modal btn-save" style="flex: 1; justify-content: center;" onclick="guardarAjustesSimulados('modal-preferences', 'Preferencias del sistema actualizadas')">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-notifications">
+        <div class="modal-container" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Notificaciones</h2>
+                <button class="btn-close" type="button" onclick="closeModal('modal-notifications')">X</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <p style="font-family: 'Oswald', sans-serif; font-size: 14px; color: var(--text-muted); margin: 0 0 20px 0;">Configura qué alertas deseas recibir por correo electrónico (admin.ti@upsin.edu.mx).</p>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label class="form-label" style="margin:0; font-size: 15px;">Alertas Críticas (Equipos caídos)</label>
+                            <label class="switch"><input type="checkbox" id="notif-criticas" checked><span class="slider round"></span></label>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label class="form-label" style="margin:0; font-size: 15px;">Recordatorios de Mantenimiento</label>
+                            <label class="switch"><input type="checkbox" id="notif-recordatorios" checked><span class="slider round"></span></label>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label class="form-label" style="margin:0; font-size: 15px;">Nuevos Equipos Registrados</label>
+                            <label class="switch"><input type="checkbox" id="notif-nuevos"><span class="slider round"></span></label>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label class="form-label" style="margin:0; font-size: 15px;">Nuevos Accesos al Sistema</label>
+                            <label class="switch"><input type="checkbox" id="notif-accesos" checked><span class="slider round"></span></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal btn-cancel" style="flex: 0.4;" onclick="closeModal('modal-notifications')">Cancelar</button>
+                <button type="button" class="btn-modal btn-save" style="flex: 1; justify-content: center;" onclick="guardarNotificaciones()">Guardar Configuración</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONFIGURACIONES GLOBALES Y UI
+        // ==========================================
+        let fullPcDatabase = [];
+        let alertasDatabase = [];
+        let mantenimientosDelMes = 0;
+        let lastKnownAlertIds = new Set();
+        let isFirstLoad = true;
+
+        async function loadBackendData() {
+            try {
+                const resEquipos = await fetch('/api/equipos');
+                fullPcDatabase = await resEquipos.json();
+
+                const resAlertas = await fetch('/api/alertas');
+                const rawAlertas = await resAlertas.json();
+                alertasDatabase = rawAlertas.map(a => {
+                    const isCrit = a.gravedad.toLowerCase() === 'alta' || a.gravedad.toLowerCase() === 'critica';
+                    return {
+                        id: a.idEquipo,
+                        status: isCrit ? 'red' : 'yellow',
+                        alertDate: a.fechaAlerta,
+                        titulo: a.titulo,
+                        gravedad: a.gravedad,
+                        idAlerta: a.idAlerta
+                    };
+                });
+
+                if (!isFirstLoad) {
+                    alertasDatabase.forEach(a => {
+                        if (!lastKnownAlertIds.has(a.idAlerta)) {
+                            if (a.status === 'red') {
+                                simularEnvioCorreo('criticas', `Alerta Crítica: El equipo ${a.id} requiere atención urgente.`);
+                            } else {
+                                simularEnvioCorreo('recordatorios', `Aviso preventivo: El equipo ${a.id} requiere mantenimiento.`);
+                            }
+                        }
+                    });
+                }
+                
+                lastKnownAlertIds = new Set(alertasDatabase.map(a => a.idAlerta));
+                isFirstLoad = false;
+
+                const resMaint = await fetch('/api/mantenimientos/count');
+                mantenimientosDelMes = await resMaint.json();
+            } catch (err) {
+                console.error("Error al cargar datos del backend:", err);
+                fullPcDatabase = [];
+                alertasDatabase = [];
+                mantenimientosDelMes = 0;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const userRole = (localStorage.getItem('usuarioRol') || 'Administrador').toLowerCase();
+            const isAdmin = userRole === 'administrador' || userRole === 'admin';
+
+            if (!isAdmin) {
+                const style = document.createElement('style');
+                style.innerHTML = `
+                    #menu-reportes, 
+                    #menu-pref, 
+                    #menu-notif, 
+                    .btn-add, 
+                    .btn-delete, 
+                    .action-btn[title="Modificar"] { 
+                        display: none !important; 
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            const toggle = document.getElementById('darkModeToggle');
+            if (localStorage.getItem('theme') === 'dark') { toggle.checked = true; }
+            
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('rep-date-from').max = today;
+            document.getElementById('rep-date-to').max = today;
+
+            const nCrit = localStorage.getItem('notif-criticas');
+            if (nCrit !== null) document.getElementById('notif-criticas').checked = (nCrit === 'true');
+            const nRec = localStorage.getItem('notif-recordatorios');
+            if (nRec !== null) document.getElementById('notif-recordatorios').checked = (nRec === 'true');
+            const nNue = localStorage.getItem('notif-nuevos');
+            if (nNue !== null) document.getElementById('notif-nuevos').checked = (nNue === 'true');
+            const nAcc = localStorage.getItem('notif-accesos');
+            if (nAcc !== null) document.getElementById('notif-accesos').checked = (nAcc === 'true');
+
+            await loadBackendData();
+            renderInventory(); 
+            renderAlerts(); 
+            
+            if (!sessionStorage.getItem('accesoNotificado')) {
+                simularEnvioCorreo('accesos', 'Nuevo acceso detectado al sistema');
+                sessionStorage.setItem('accesoNotificado', 'true');
+            }
+            
+            // Auto-refresh simulador
+            setInterval(async () => {
+                await loadBackendData();
+                if (document.getElementById('view-dashboard').classList.contains('active-view')) {
+                    updateDashboardStats();
+                    const activeTab = document.querySelector('.tab.active');
+                    if (activeTab && activeTab.getAttribute('data-target') !== 'inicio') {
+                        renderSimpleList(activeTab.getAttribute('data-target') === 'todos' ? 'todos' : 
+                                        activeTab.getAttribute('data-target') === 'bueno' ? 'green' : 
+                                        activeTab.getAttribute('data-target') === 'proximo' ? 'yellow' : 'red');
+                    }
+                }
+                if (document.getElementById('view-inventario').classList.contains('active-view')) renderInventory();
+                if (document.getElementById('view-alertas').classList.contains('active-view')) renderAlerts();
+            }, 10000);
+        });
+
+        function toggleSettings() { document.getElementById('settingsDropdown').classList.toggle('show'); }
+        
+        window.onclick = function(event) {
+            if (!event.target.closest('.settings-wrapper') && !event.target.closest('.modal-container') && !event.target.closest('#main-search-input')) {
+                const dropdowns = document.getElementsByClassName("settings-dropdown");
+                for (let i = 0; i < dropdowns.length; i++) {
+                    if (dropdowns[i].classList.contains('show')) dropdowns[i].classList.remove('show');
+                }
+            }
+        }
+
+        function abrirModalAjustes(modalId) {
+            document.getElementById('settingsDropdown').classList.remove('show');
+            document.getElementById(modalId).classList.add('show');
+        }
+
+        function guardarAjustesSimulados(modalId, mensaje) {
+            closeModal(modalId);
+            showToast(mensaje);
+        }
+
+        function toggleDarkMode() {
+            const body = document.body; body.classList.toggle('dark-mode');
+            if (body.classList.contains('dark-mode')) { localStorage.setItem('theme', 'dark'); } 
+            else { localStorage.setItem('theme', 'light'); }
+        }
+
+        function cerrarSesionApp() {
+            localStorage.setItem('isLoggedIn', 'false'); window.location.href = 'login.html';
+        }
+
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            if(!container) return;
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.classList.add('fade-out'); setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        function guardarNotificaciones() {
+            localStorage.setItem('notif-criticas', document.getElementById('notif-criticas').checked);
+            localStorage.setItem('notif-recordatorios', document.getElementById('notif-recordatorios').checked);
+            localStorage.setItem('notif-nuevos', document.getElementById('notif-nuevos').checked);
+            localStorage.setItem('notif-accesos', document.getElementById('notif-accesos').checked);
+            closeModal('modal-notifications');
+            showToast('Configuración de notificaciones guardada');
+        }
+
+        function simularEnvioCorreo(tipo, mensaje) {
+            let habilitado = false;
+            if (tipo === 'criticas' && document.getElementById('notif-criticas').checked) habilitado = true;
+            if (tipo === 'recordatorios' && document.getElementById('notif-recordatorios').checked) habilitado = true;
+            if (tipo === 'nuevos' && document.getElementById('notif-nuevos').checked) habilitado = true;
+            if (tipo === 'accesos' && document.getElementById('notif-accesos').checked) habilitado = true;
+
+            if (habilitado) {
+                const correo = localStorage.getItem('usuarioCorreo') || 'admin.ti@upsin.edu.mx';
+                setTimeout(() => {
+                    const container = document.getElementById('toast-container');
+                    if(!container) return;
+                    const toast = document.createElement('div');
+                    toast.className = 'toast';
+                    toast.style.backgroundColor = 'var(--purple-dark)';
+                    toast.style.borderLeft = '5px solid var(--glow-color)';
+                    toast.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--glow-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px; min-width: 24px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>' +
+                    '<div style="display:flex; flex-direction:column; gap:2px;">' +
+                        '<span style="font-size: 12px; color: var(--purple-light);">Correo enviado a ' + correo + '</span>' +
+                        '<span style="font-size: 15px;">' + mensaje + '</span>' +
+                    '</div>';
+                    container.appendChild(toast);
+                    setTimeout(() => { toast.classList.add('fade-out'); setTimeout(() => toast.remove(), 300); }, 5000);
+                }, 1000);
+            }
+        }
+
+        function switchMainView(view, e) {
+            if (e) {
+                const items = document.querySelectorAll('.sidebar .menu-item');
+                items.forEach(i => i.classList.remove('active-menu'));
+                e.currentTarget.classList.add('active-menu');
+            }
+
+            document.getElementById('view-dashboard').classList.remove('active-view');
+            document.getElementById('view-inventario').classList.remove('active-view');
+            document.getElementById('view-alertas').classList.remove('active-view');
+            document.getElementById('view-reportes').classList.remove('active-view');
+
+            if(view === 'dashboard') {
+                document.getElementById('view-dashboard').classList.add('active-view');
+                updateDashboardStats(); 
+                const activeTab = document.querySelector('.tab.active');
+                if(activeTab && activeTab.getAttribute('data-target') !== 'inicio') {
+                    renderSimpleList(activeTab.getAttribute('data-target') === 'todos' ? 'todos' : 
+                                    activeTab.getAttribute('data-target') === 'bueno' ? 'green' : 
+                                    activeTab.getAttribute('data-target') === 'proximo' ? 'yellow' : 'red');
+                }
+            } else if (view === 'inventario') {
+                document.getElementById('view-inventario').classList.add('active-view');
+                renderInventory();
+            } else if (view === 'alertas') {
+                document.getElementById('view-alertas').classList.add('active-view');
+                renderAlerts();
+            } else if (view === 'reportes') {
+                document.getElementById('view-reportes').classList.add('active-view');
+                initReportes();
+            }
+        }
+
+
+        const pcSvgIcon = `
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="list-pc-svg">
+                <rect x="36" y="8" width="22" height="48" rx="4" fill="#3949AB" stroke="var(--border-color)" stroke-width="3"/>
+                <circle cx="47" cy="20" r="3" fill="#FFEB3B" stroke="var(--border-color)" stroke-width="2"/>
+                <circle cx="47" cy="30" r="3" fill="#FFEB3B" stroke="var(--border-color)" stroke-width="2"/>
+                <rect x="42" y="46" width="2" height="6" rx="1" fill="var(--border-color)"/><rect x="47" y="46" width="2" height="6" rx="1" fill="var(--border-color)"/><rect x="52" y="46" width="2" height="6" rx="1" fill="var(--border-color)"/>
+                <rect x="6" y="16" width="34" height="24" rx="4" fill="#03A9F4" stroke="var(--border-color)" stroke-width="3"/>
+                <path d="M14 40 L14 48 M32 40 L32 48 M16 48 L30 48" stroke="var(--border-color)" stroke-width="3" stroke-linecap="round"/>
+                <path d="M12 48 L34 48" stroke="var(--border-color)" stroke-width="4" stroke-linecap="round"/>
+                <path d="M10 22 L18 30 M14 20 L22 28" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+        `;
+
+        const btnInfoSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#AF6CB6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
+        const btnEditSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#AF6CB6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+        const btnDeleteSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F96D6D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`;
+
+        // ==========================================
+        // LÓGICA DE ALMACENAMIENTO DINÁMICO
+        // ==========================================
+        let storageCount = 1;
+
+        function addStorageUnit(data = null) {
+            storageCount++;
+            const container = document.getElementById('storage-container');
+            const div = document.createElement('div');
+            div.className = 'storage-unit-group';
+            div.dataset.index = storageCount;
+            div.innerHTML = `
+                <div style="width:100%; height:1px; background:var(--border-color); margin: 15px 0;"></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <label class="form-label" style="margin:0; color: var(--purple-accent);">UNIDAD ${storageCount}</label>
+                    <button type="button" onclick="recalcularUnidades(this)" style="color:var(--critical); background:none; border:none; cursor:pointer; font-weight:bold; font-family:'Oswald', sans-serif;">X ELIMINAR</button>
+                </div>
+                <div class="form-grid cols-2" style="margin-bottom: 10px;">
+                    <label class="form-label">TIPO</label>
+                    <div class="form-input-box"><input type="text" class="modal-input s-type" placeholder="TIPO" value="${data ? data.type : ''}"></div>
+                    <label class="form-label">USO</label>
+                    <div class="form-input-box"><input type="text" class="modal-input s-use" placeholder="USO" value="${data ? data.use : ''}"></div>
+                </div>
+                <div class="form-grid" style="margin-bottom: 10px;">
+                    <label class="form-label">CAPACIDAD</label>
+                    <div class="form-input-box"><input type="text" class="modal-input s-cap" placeholder="(EJ. 1 TB )" value="${data ? data.cap : ''}"></div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function recalcularUnidades(botonElemento) {
+            botonElemento.parentElement.parentElement.remove();
+            const contenedor = document.getElementById('storage-container');
+            const unidadesRestantes = contenedor.querySelectorAll('.storage-unit-group');
+            storageCount = 1;
+
+            unidadesRestantes.forEach((unidad) => {
+                if (unidad.dataset.index !== "1") { 
+                    storageCount++;
+                    unidad.dataset.index = storageCount;
+                    const titulo = unidad.querySelector('label.form-label');
+                    if(titulo) {
+                        titulo.innerText = 'UNIDAD ' + storageCount;
+                    }
+                }
+            });
+        }
+
+        function resetStorageContainer() {
+            storageCount = 1;
+            document.getElementById('storage-container').innerHTML = `
+                <div class="storage-unit-group" data-index="1">
+                    <div class="form-grid cols-2" style="margin-bottom: 10px;">
+                        <label class="form-label">UNIDAD 1 - TIPO</label>
+                        <div class="form-input-box"><input type="text" class="modal-input s-type" id="f-s1-type" placeholder="TIPO"><span class="error-text">Req.</span></div>
+                        <label class="form-label">USO</label>
+                        <div class="form-input-box"><input type="text" class="modal-input s-use" id="f-s1-use" placeholder="USO"><span class="error-text">Req.</span></div>
+                    </div>
+                    <div class="form-grid" style="margin-bottom: 20px;">
+                        <label class="form-label">CAPACIDAD 1</label>
+                        <div class="form-input-box"><input type="text" class="modal-input s-cap" id="f-s1-cap" placeholder="(EJ. 1 TB )"><span class="error-text">Requerido</span></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // LÓGICA DE REPORTES
+        // ==========================================
+        function initReportes() {
+            const total = fullPcDatabase.length;
+            const crit = fullPcDatabase.filter(pc => pc.status === 'red').length;
+            
+            document.getElementById('rep-badge-inv').innerText = `${total} EQUIPO${total !== 1 ? 'S' : ''}`;
+            document.getElementById('rep-badge-crit').innerText = `${crit} CRÍTICO${crit !== 1 ? 'S' : ''}`;
+            document.getElementById('rep-badge-mnt').innerText = `${mantenimientosDelMes} REGISTRO${mantenimientosDelMes !== 1 ? 'S' : ''}`;
+
+            const locSelect = document.getElementById('rep-location');
+            locSelect.innerHTML = '<option value="todas">TODAS LAS UBICACIONES</option>';
+            
+            if(total === 0) {
+                locSelect.innerHTML = '<option value="none" disabled selected>No hay ubicaciones disponibles</option>';
+                locSelect.disabled = true;
+            } else {
+                locSelect.disabled = false;
+                const locs = new Set();
+                fullPcDatabase.forEach(pc => {
+                    const parts = pc.id.split('-');
+                    if(parts.length > 1) locs.add(parts[1].replace(/\D/g, '') ? `LABORATORIO ${parts[1].replace(/\D/g, '')}` : parts[1]); 
+                });
+                locs.forEach(loc => {
+                    locSelect.innerHTML += `<option value="${loc}">${loc}</option>`;
+                });
+            }
+            updateFooterSummary();
+        }
+
+        function clearCustomFilters() {
+            document.getElementById('rep-date-from').value = '';
+            document.getElementById('rep-date-to').value = '';
+            document.getElementById('rep-date-from').classList.remove('error');
+            document.getElementById('rep-date-to').classList.remove('error');
+            
+            const locSelect = document.getElementById('rep-location');
+            if(!locSelect.disabled) locSelect.value = 'todas';
+
+            document.querySelectorAll('.status-chip').forEach(c => c.classList.remove('active'));
+            updateFooterSummary();
+        }
+
+        function clearQuickReports() {
+            document.querySelectorAll('.rep-card').forEach(c => c.classList.remove('selected'));
+        }
+
+        function selectReportCard(element, type) {
+            document.querySelectorAll('.rep-card').forEach(c => c.classList.remove('selected'));
+            element.classList.add('selected');
+            clearCustomFilters();
+        }
+
+        function toggleFilterChip(element) {
+            clearQuickReports(); 
+            element.classList.toggle('active');
+            updateFooterSummary();
+        }
+
+        function validateDates() {
+            clearQuickReports(); 
+            const from = document.getElementById('rep-date-from');
+            const to = document.getElementById('rep-date-to');
+            const errFrom = document.getElementById('err-date-from');
+            const errTo = document.getElementById('err-date-to');
+
+            from.classList.remove('error');
+            to.classList.remove('error');
+
+            if(from.value) {
+                const yearFrom = new Date(from.value).getFullYear();
+                if(yearFrom < 2000) { from.classList.add('error'); errFrom.innerText = "Año mínimo: 2000"; }
+            }
+
+            if(from.value && to.value) {
+                if(new Date(to.value) < new Date(from.value)) {
+                    to.classList.add('error');
+                    errTo.innerText = "La fecha 'Hasta' debe ser mayor o igual";
+                }
+            }
+            updateFooterSummary();
+        }
+
+        function updateFooterSummary() {
+            const locSelect = document.getElementById('rep-location');
+            let ubi = "Todas las ubicaciones";
+            if(!locSelect.disabled && locSelect.value !== 'todas' && locSelect.value !== 'none') {
+                ubi = locSelect.options[locSelect.selectedIndex].text;
+            }
+
+            const activeChips = Array.from(document.querySelectorAll('.status-chip.active')).map(c => c.innerText.toLowerCase());
+            let estados = activeChips.length > 0 ? activeChips.join(', ') : "ninguno";
+
+            const from = document.getElementById('rep-date-from').value;
+            const to = document.getElementById('rep-date-to').value;
+            let fechas = "Sin límite de fechas";
+            if(from && to) fechas = `${from} → ${to}`;
+            else if (from) fechas = `Desde ${from}`;
+            else if (to) fechas = `Hasta ${to}`;
+
+            document.getElementById('rep-footer-summary').innerText = `Filtros: ${ubi} · Estados: ${estados} · Fechas: ${fechas}`;
+        }
+
+        function openExportModal(type) {
+            const title = document.getElementById('export-title');
+            const options = document.getElementById('export-options');
+            const icon = document.getElementById('export-icon');
+            const inputName = document.getElementById('export-filename');
+            const btnDownload = document.getElementById('btn-export-download');
+            const infoText = document.getElementById('export-info');
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            inputName.value = `reporte_jadkcare_${todayStr}`;
+
+            if(type === 'pdf') {
+                title.innerText = "Configurar exportación PDF";
+                infoText.style.display = 'none';
+                options.innerHTML = `
+                    <div class="export-toggle-row">Incluir Gráficos <label class="switch"><input type="checkbox" checked><span class="slider round"></span></label></div>
+                    <div class="export-toggle-row">Incluir Resumen <label class="switch"><input type="checkbox" checked><span class="slider round"></span></label></div>
+                    <div class="export-toggle-row">Todas las Páginas <label class="switch"><input type="checkbox" checked><span class="slider round"></span></label></div>
+                `;
+                icon.innerHTML = `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><path d="M14 4 H38 L50 16 V58 A2 2 0 0 1 48 60 H14 A2 2 0 0 1 12 58 V6 A2 2 0 0 1 14 4 Z" fill="#E2E5E7"/><path d="M38 4 L50 16 H40 A2 2 0 0 1 38 14 Z" fill="#B0B7BD"/><rect x="10" y="30" width="34" height="20" rx="2" fill="#E5252A"/><text x="27" y="44" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white" text-anchor="middle">PDF</text></svg>`;
+                btnDownload.className = 'btn-modal btn-download-pdf';
+                btnDownload.innerText = "DESCARGAR ARCHIVO PDF";
+            } else {
+                title.innerText = "Configurar exportación Excel";
+                infoText.style.display = 'block';
+                options.innerHTML = `
+                    <div class="export-toggle-row">Incluir Resumen <label class="switch"><input type="checkbox" checked><span class="slider round"></span></label></div>
+                    <div class="export-toggle-row">Incluir Filtros Automáticos <label class="switch"><input type="checkbox" checked><span class="slider round"></span></label></div>
+                    <div class="export-toggle-row">Incluir Historial Completo <label class="switch"><input type="checkbox"><span class="slider round"></span></label></div>
+                `;
+                icon.innerHTML = `<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><path d="M14 4 H38 L50 16 V58 A2 2 0 0 1 48 60 H14 A2 2 0 0 1 12 58 V6 A2 2 0 0 1 14 4 Z" fill="#E2E5E7"/><path d="M38 4 L50 16 H40 A2 2 0 0 1 38 14 Z" fill="#B0B7BD"/><rect x="10" y="30" width="34" height="20" rx="2" fill="#1D6F42"/><text x="27" y="44" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white" text-anchor="middle">XLS</text></svg>`;
+                btnDownload.className = 'btn-modal btn-download-excel';
+                btnDownload.innerText = "DESCARGAR ARCHIVO EXCEL";
+            }
+            document.getElementById('modal-export').classList.add('show');
+        }
+
+        function downloadReport() {
+            const isPdf = document.getElementById('export-title').innerText.includes('PDF');
+            const filename = document.getElementById('export-filename').value || 'reporte';
+            
+            const toggles = document.querySelectorAll('#export-options input[type="checkbox"]');
+            const opt1 = toggles.length > 0 ? toggles[0].checked : true;
+            const opt2 = toggles.length > 1 ? toggles[1].checked : true;
+            const opt3 = toggles.length > 2 ? toggles[2].checked : false;
+
+            // Send active filters (global variables set by the UI)
+            const labInput = document.getElementById('rep-location') ? document.getElementById('rep-location').value : 'todas';
+            const statusNode = document.querySelector('#rep-status-chips .status-chip.active');
+            const statusInput = statusNode ? statusNode.dataset.status : 'all';
+
+            const labParam = labInput !== 'todas' ? `&lab=${encodeURIComponent(labInput)}` : '&lab=todos';
+            const statusParam = statusInput !== 'all' ? `&status=${encodeURIComponent(statusInput)}` : '&status=all';
+
+            const url = isPdf 
+                ? `/api/reportes/pdf?filename=${encodeURIComponent(filename)}&opt1=${opt1}&opt2=${opt2}&opt3=${opt3}${labParam}${statusParam}`
+                : `/api/reportes/excel?filename=${encodeURIComponent(filename)}&opt1=${opt1}&opt2=${opt2}&opt3=${opt3}${labParam}${statusParam}`;
+                
+            showLoader("PREPARANDO REPORTE...");
+            setTimeout(() => {
+                window.open(url, '_blank');
+                closeModal('modal-export');
+                hideLoader();
+                showToast("Descarga iniciada exitosamente");
+            }, 1500);
+        }
+
+        // ==========================================
+        // LÓGICA DE ALERTAS Y RESOLUCIÓN
+        // ==========================================
+        function updateGlobalBadge() {
+            const activeAlerts = fullPcDatabase.filter(pc => pc.status === 'red' || pc.status === 'yellow');
+            const badge = document.getElementById('sidebar-alert-badge');
+            if (activeAlerts.length > 0) {
+                badge.style.display = 'flex';
+                badge.innerText = activeAlerts.length;
+            } else {
+                badge.style.display = 'none';
+            }
+            return activeAlerts;
+        }
+
+        function renderAlerts() {
+            const activeAlerts = updateGlobalBadge();
+            const listContainer = document.getElementById('alerts-list');
+            const emptyState = document.getElementById('alerts-empty-state');
+            
+            listContainer.innerHTML = '';
+
+            if (activeAlerts.length === 0) {
+                listContainer.style.display = 'none';
+                emptyState.style.display = 'flex';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            listContainer.style.display = 'flex';
+
+            activeAlerts.forEach(pc => {
+                const isCrit = pc.status === 'red';
+                const colorDot = isCrit ? 'red' : 'yellow';
+                const label = isCrit ? 'CRÍTICO' : 'PRÓXIMO';
+                const bgClass = isCrit ? 'critical' : 'warning';
+                const colorLabel = isCrit ? 'var(--alert-card-crit)' : 'var(--alert-card-bg)';
+                
+                let alertDays = pc.alertDate ? Math.floor((new Date() - new Date(pc.alertDate)) / (1000 * 60 * 60 * 24)) : 0;
+                const time = alertDays === 0 ? 'GENERADA HOY' : `GENERADA HACE ${alertDays} DÍAS`;
+                const desc = isCrit ? `PROBLEMA CRÍTICO REPORTADO — SE REQUIERE ATENCIÓN INMEDIATA.` : `TIEMPO DE MANTENIMIENTO PREVENTIVO EXCEDIDO — FAVOR DE REVISAR.`;
+
+                const btn1Class = isCrit ? 'alert-btn-crit-primary' : 'alert-btn-warn-primary';
+                const btn2Class = isCrit ? 'alert-btn-crit-secondary' : 'alert-btn-warn-secondary';
+
+                const cardHTML = `
+                    <div class="alert-card ${bgClass}">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <span class="dot ${colorDot}"></span>
+                            <span style="font-family: 'Oswald', sans-serif; font-size: 18px; font-weight: bold;">${pc.id}</span>
+                            <span class="alert-badge" style="color: ${colorLabel};">${label}</span>
+                        </div>
+                        <p style="font-family: 'Open Sans Hebrew Condensed', sans-serif; margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; font-weight: 700;">${desc}</p>
+                        <p style="font-family: 'Open Sans Hebrew Condensed', sans-serif; margin: 0 0 15px 0; font-size: 12px; display: flex; align-items: center; gap: 5px; font-weight: bold;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            ${time}
+                        </p>
+                        <div style="display: flex; gap: 15px;">
+                            <button class="alert-btn ${btn1Class}" onclick="openAlertDetails('${pc.id}')">VER DETALLES</button>
+                            <button class="alert-btn ${btn2Class}" onclick="openResolveAlert('${pc.id}')">RESOLVER/CREAR BITÁCORA</button>
+                        </div>
+                    </div>
+                `;
+                listContainer.insertAdjacentHTML('beforeend', cardHTML);
+            });
+        }
+
+        async function openAlertDetails(id) {
+            const pc = fullPcDatabase.find(p => p.id === id);
+            if(!pc) return;
+
+            const isCrit = pc.status === 'red';
+            const label = isCrit ? 'CRÍTICO' : 'PRÓXIMO';
+            const badgeBg = isCrit ? 'var(--critical)' : 'var(--warning)';
+            const badgeColor = isCrit ? 'white' : '#1a1a1a';
+            
+            let alertDays = pc.alertDate ? Math.floor((new Date() - new Date(pc.alertDate)) / (1000 * 60 * 60 * 24)) : 0;
+            const timeText = alertDays === 0 ? 'HOY' : `HACE ${alertDays} DÍAS`;
+            
+            const parts = pc.id.split('-');
+            const ubicacion = parts.length > 1 ? `Laboratorio ${parts[1].replace(/\D/g, '') || parts[1]}` : 'General';
+            const lastMaint = (pc.history && pc.history.length > 0) ? 
+                (Math.floor((new Date() - new Date(pc.history[0].date)) / (1000 * 60 * 60 * 24)) + ' días') : 'nunca';
+
+            const desc = isCrit 
+                ? `El equipo <strong>${pc.id}</strong> ubicado en <strong>${ubicacion}</strong> presenta fallas críticas reportadas ${timeText}.<br><br>Su último mantenimiento fue hace ${lastMaint}.<br>Requiere atención inmediata de un técnico.` 
+                : `El equipo <strong>${pc.id}</strong> ubicado en <strong>${ubicacion}</strong> ha excedido el tiempo recomendado para su mantenimiento preventivo.<br><br>Su último mantenimiento fue hace ${lastMaint}.<br>Favor de programar una revisión pronto.`;
+
+            document.getElementById('alert-detail-id').innerText = pc.id;
+            const badge = document.getElementById('alert-detail-badge');
+            badge.innerText = label;
+            badge.style.background = badgeBg;
+            badge.style.color = badgeColor;
+
+            const banner = document.getElementById('alert-detail-banner');
+            if (isCrit) {
+                banner.style.background = 'var(--critical)';
+                banner.style.color = 'white';
+                banner.style.boxShadow = '0 6px 12px rgba(211, 47, 47, 0.4)';
+            } else {
+                banner.style.background = '#FFB800'; 
+                banner.style.color = '#1a1a1a';
+                banner.style.boxShadow = '0 6px 12px rgba(255, 184, 0, 0.4)';
+            }
+            document.getElementById('alert-detail-desc').innerHTML = desc;
+
+            document.getElementById('alert-gen-id').innerText = pc.id;
+            document.getElementById('alert-gen-ubi').innerText = ubicacion;
+            document.getElementById('alert-gen-ult').innerText = lastMaint === 'NUNCA' ? 'NUNCA' : `HACE ${lastMaint}`;
+            document.getElementById('alert-gen-prox').innerText = isCrit ? 'URGENTE' : 'PREVENTIVO';
+            document.getElementById('alert-spec-cpu').innerText = pc.cpu;
+            document.getElementById('alert-spec-ram').innerText = pc.ram;
+            document.getElementById('alert-spec-gpu').innerText = pc.gpu;
+            
+            let storeText = '';
+            if(pc.storage && pc.storage.length > 0) {
+                storeText = pc.storage.map(u => `${u.cap} ${u.type}`).join('<br>');
+            } else {
+                storeText = `${pc.s1Cap || ''} ${pc.s1Type || ''}`;
+            }
+            document.getElementById('alert-spec-store').innerHTML = storeText;
+
+            let historyHTML = '<p style="border:none; color: var(--text-muted); font-style: italic;">CARGANDO HISTORIAL...</p>';
+            document.getElementById('alert-detail-history').innerHTML = historyHTML;
+            document.getElementById('modal-alert-details').classList.add('show');
+            
+            try {
+                const res = await fetch(`/api/equipos/${id}/mantenimientos`);
+                const historyData = await res.json();
+                
+                let loadedHistoryHTML = '';
+                if (historyData && historyData.length > 0) {
+                    historyData.forEach(h => {
+                        let days = 0;
+                        if (h.fecha) {
+                            days = Math.floor((new Date() - new Date(h.fecha)) / (1000 * 60 * 60 * 24));
+                        }
+                        const hTimeText = days === 0 ? 'HOY' : `HACE ${days} DÍAS`;
+                        loadedHistoryHTML += `<p>${h.tipo.toUpperCase()}<br><span>${hTimeText} · TÉCNICO: ${h.tecnico.toUpperCase()}</span><br><span style="font-size:10px; color:var(--text-muted)">OBS: ${h.observaciones.toUpperCase()}</span></p>`;
+                    });
+                } else {
+                    loadedHistoryHTML = '<p style="border:none; color: var(--text-muted); font-style: italic;">NO HAY MANTENIMIENTOS PREVIOS.</p>';
+                }
+                document.getElementById('alert-detail-history').innerHTML = loadedHistoryHTML;
+                
+                const lastMaint = historyData.length > 0 && historyData[0].fecha ? 
+                    (Math.floor((new Date() - new Date(historyData[0].fecha)) / (1000 * 60 * 60 * 24)) + ' DÍAS') : 'NUNCA';
+                document.getElementById('alert-gen-ult').innerText = lastMaint === 'NUNCA' ? 'NUNCA' : `HACE ${lastMaint}`;
+            } catch (err) {
+                document.getElementById('alert-detail-history').innerHTML = '<p style="border:none; color: var(--critical); font-style: italic;">ERROR AL CARGAR HISTORIAL.</p>';
+            }
+        }
+
+        function openResolveAlert(id) {
+            clearFormErrors();
+            document.getElementById('resolve-form').reset();
+            document.getElementById('resolve-pc-id').value = id;
+            document.getElementById('resolve-display-id').innerText = id;
+            document.getElementById('modal-resolve-alert').classList.add('show');
+        }
+
+        async function submitResolveAlert(e) {
+            e.preventDefault();
+            clearFormErrors();
+            const requiredFields = ['r-type', 'r-obs', 'r-tech'];
+            let hasError = false;
+
+            requiredFields.forEach(id => {
+                const field = document.getElementById(id);
+                if (!field.value.trim()) { field.classList.add('error'); hasError = true; }
+            });
+            if (hasError) return;
+
+            const id = document.getElementById('resolve-pc-id').value;
+            const typeSelect = document.getElementById('r-type');
+            const typeName = typeSelect.options[typeSelect.selectedIndex].text;
+            const obsName = document.getElementById('r-obs').value.trim();
+            const techName = document.getElementById('r-tech').value.trim();
+
+            try {
+                const response = await fetch('/api/alertas/resolver', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        idEquipo: id,
+                        tipoMantenimiento: typeName,
+                        observaciones: obsName,
+                        tecnicoNombre: techName
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    showToast(`Bitácora generada y alerta resuelta para ${id}`);
+                    simularEnvioCorreo('recordatorios', 'Bitácora generada para el equipo ' + id);
+                    closeModal('modal-resolve-alert');
+                    await loadBackendData();
+                    renderInventory();
+                    renderAlerts();
+                    updateDashboardStats();
+                    if (document.getElementById('view-reportes').classList.contains('active-view')) initReportes();
+                } else {
+                    showToast(data.message || "Error al resolver la alerta");
+                }
+            } catch (err) {
+                console.error(err);
+                showToast("Error al conectar con el servidor.");
+            }
+        }
+
+        // ==========================================
+        // LÓGICA DEL INVENTARIO CRUD Y DASHBOARD
+        // ==========================================
+        function updateDashboardStats() {
+            const total = fullPcDatabase.length;
+            const ok = fullPcDatabase.filter(pc => pc.status === 'green').length;
+            const warn = fullPcDatabase.filter(pc => pc.status === 'yellow').length;
+            const crit = fullPcDatabase.filter(pc => pc.status === 'red').length;
+
+            document.getElementById('dash-total').innerText = total;
+            document.getElementById('dash-ok').innerText = ok;
+            document.getElementById('dash-warn').innerText = warn;
+            document.getElementById('dash-crit').innerText = crit;
+            document.getElementById('donut-text-bottom').innerText = total;
+
+            const svg = document.getElementById('donut-svg');
+            
+            if (total === 0) {
+                document.getElementById('perc-ok').innerText = '0%';
+                document.getElementById('perc-warn').innerText = '0%';
+                document.getElementById('perc-crit').innerText = '0%';
+                svg.innerHTML = '<circle class="donut-segment segment-operative" cx="21" cy="21" r="15.915" stroke="var(--border-color)" stroke-dasharray="100 0" stroke-dashoffset="0" data-title="NO HAY DATOS" data-desc="Agregue equipos"></circle>';
+                document.getElementById('dash-urgency-list').innerHTML = '<p style="text-align: center; color: var(--text-muted); font-style: italic;">No hay urgencias reportadas.</p>';
+            } else {
+                const pOk = (ok / total * 100);
+                const pWarn = (warn / total * 100);
+                const pCrit = (crit / total * 100);
+
+                document.getElementById('perc-ok').innerText = Math.round(pOk) + '%';
+                document.getElementById('perc-warn').innerText = Math.round(pWarn) + '%';
+                document.getElementById('perc-crit').innerText = Math.round(pCrit) + '%';
+
+                let offsetOk = 0;
+                let offsetWarn = 100 - pOk;
+                let offsetCrit = 100 - pOk - pWarn;
+
+                svg.innerHTML = `
+                    <circle class="donut-segment segment-operative" cx="21" cy="21" r="15.915" stroke="var(--purple-accent)" stroke-dasharray="${pOk} ${100-pOk}" stroke-dashoffset="0" data-title="${Math.round(pOk)}% OPERATIVO" data-desc="${ok} equipos en buen estado"></circle>
+                    <circle class="donut-segment segment-warning" cx="21" cy="21" r="15.915" stroke="var(--warning)" stroke-dasharray="${pWarn} ${100-pWarn}" stroke-dashoffset="-${pOk}" data-title="${Math.round(pWarn)}% PRÓXIMO" data-desc="${warn} equipos por revisar"></circle>
+                    <circle class="donut-segment segment-critical" cx="21" cy="21" r="15.915" stroke="var(--critical)" stroke-dasharray="${pCrit} ${100-pCrit}" stroke-dashoffset="-${pOk + pWarn}" data-title="${Math.round(pCrit)}% CRÍTICO" data-desc="${crit} equipos vencidos"></circle>
+                `;
+                rebindDonutEvents();
+
+                const urgencyList = document.getElementById('dash-urgency-list');
+                const criticalAndWarning = fullPcDatabase.filter(pc => pc.status === 'red' || pc.status === 'yellow').slice(0, 3);
+                if (criticalAndWarning.length === 0) {
+                     urgencyList.innerHTML = '<p style="text-align: center; color: var(--text-muted); font-style: italic;">Todos los equipos están operativos.</p>';
+                } else {
+                    urgencyList.innerHTML = '';
+                    criticalAndWarning.forEach(pc => {
+                        const isCrit = pc.status === 'red';
+                        const colorClass = isCrit ? 'urgency-critical' : 'urgency-warning';
+                        const iconSvg = isCrit ? 
+                            '<svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="28" fill="#E53935"/><path d="M32 4 A28 28 0 0 1 60 32 A28 28 0 0 0 32 8 A28 28 0 0 0 4 32 A28 28 0 0 1 32 4 Z" fill="#EF5350"/><circle cx="32" cy="46" r="4" fill="#fff"/><path d="M28 16 L29 38 H35 L36 16 Z" fill="#fff"/></svg>' : 
+                            '<svg viewBox="0 0 64 64" fill="none"><path d="M32 6 C34 6 35 7 36 9 L58 50 C59 52 58 55 55 55 H9 C6 55 5 52 6 50 L28 9 C29 7 30 6 32 6 Z" fill="#FFC107"/><circle cx="32" cy="46" r="3.5" fill="#2C3E50"/><path d="M29 22 L30 38 H34 L35 22 Z" fill="#2C3E50"/></svg>';
+                        const msg = isCrit ? 'Requiere mantenimiento inmediato' : 'Mantenimiento preventivo sugerido';
+                        urgencyList.innerHTML += `<div class="urgency-item ${colorClass}"><div class="urgency-icon">${iconSvg}</div><div><p class="urgency-id">${pc.id}</p><p class="urgency-text" ${!isCrit ? 'style="color: #1a1a1a;"' : ''}>${msg}</p></div></div>`;
+                    });
+                }
+            }
+            updateGlobalBadge();
+        }
+
+        function renderInventory() {
+            const listContainer = document.getElementById('inv-list');
+            const emptyState = document.getElementById('inv-empty-state');
+            
+            // 1. LIMPIAMOS EL CONTENEDOR ANTES DE DIBUJAR PARA EVITAR DUPLICADOS
+            listContainer.innerHTML = '';
+
+            if (fullPcDatabase.length === 0) {
+                listContainer.style.display = 'none';
+                emptyState.style.display = 'flex';
+                updateDashboardStats();
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            listContainer.style.display = 'flex';
+
+            // 2. CICLO ÚNICO PARA DIBUJAR LAS TARJETAS REALES DE LA BASE DE DATOS
+            fullPcDatabase.forEach(pc => {
+                let storageText = '';
+                if(pc.storage && pc.storage.length > 0) {
+                    storageText = `${pc.storage[0].cap} ${pc.storage[0].type}`;
+                } else {
+                    storageText = `${pc.s1Cap} ${pc.s1Type}`;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'list-card';
+                card.id = 'card-' + pc.id; 
+
+                card.innerHTML = `
+                    <div class="list-pc-info">${pcSvgIcon}<span class="list-pc-id">${pc.id}</span></div>
+                    <div class="list-specs">
+                        <span class="spec-label">MOTHERBOARD:</span><span class="spec-value">${pc.mobo}</span>
+                        <span class="spec-label">CPU:</span><span class="spec-value">${pc.cpu}</span>
+                        <span class="spec-label">GPU:</span><span class="spec-value">${pc.gpu}</span>
+                        <span class="spec-label">RAM:</span><span class="spec-value">${pc.ram}</span>
+                        <span class="spec-label">ALMACENAMIENTO:</span><span class="spec-value">${storageText}</span>
+                    </div>
+                    <div class="list-status-wrapper"><div class="status-pill pill-${pc.status}"></div></div>
+                    <div class="list-actions">
+                        <button class="action-btn" onclick="openInfoModal('${pc.id}')" title="Ver Info">${btnInfoSvg}</button>
+                        <button class="action-btn" onclick="openEditModal('${pc.id}')" title="Modificar">${btnEditSvg}</button>
+                        <button class="action-btn btn-delete" onclick="openDeleteModal('${pc.id}')" title="Eliminar">${btnDeleteSvg}</button>
+                    </div>
+                `;
+                listContainer.appendChild(card);
+            });
+            updateDashboardStats();
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+            clearFormErrors();
+        }
+
+        function clearFormErrors() {
+            document.querySelectorAll('.modal-input').forEach(el => el.classList.remove('error'));
+            const idError = document.getElementById('f-id').nextElementSibling;
+            if(idError) {
+                idError.innerText = "Requerido";
+                idError.style.display = "none";
+            }
+        }
+
+        function openAddModal() {
+            clearFormErrors();
+            document.getElementById('equipment-form').reset();
+            document.getElementById('edit-mode-id').value = '';
+            document.getElementById('modal-form-title').innerText = 'REGISTRAR NUEVO EQUIPO';
+            resetStorageContainer();
+            document.getElementById('modal-form-overlay').classList.add('show');
+        }
+
+        async function saveEquipment(e) {
+            e.preventDefault();
+            clearFormErrors();
+            
+            const newId = document.getElementById('f-id').value.trim().toUpperCase();
+            const editId = document.getElementById('edit-mode-id').value;
+
+            const exists = fullPcDatabase.find(p => p.id === newId);
+            if (exists && editId !== newId) {
+                document.getElementById('f-id').classList.add('error');
+                const errorSpan = document.getElementById('f-id').nextElementSibling;
+                errorSpan.innerText = "ESTE ID YA EXISTE EN EL SISTEMA";
+                errorSpan.style.display = 'block';
+                return;
+            }
+
+            let hasError = false;
+            const requiredFields = ['f-id', 'f-cpu', 'f-mobo', 'f-ram', 'f-gpu', 'f-mac', 'f-ip'];
+            requiredFields.forEach(id => {
+                const field = document.getElementById(id);
+                if (!field.value.trim()) { field.classList.add('error'); hasError = true; }
+            });
+
+            const storageUnits = [];
+            let storageError = false;
+            document.querySelectorAll('.storage-unit-group').forEach(group => {
+                const type = group.querySelector('.s-type').value.trim().toUpperCase();
+                const use = group.querySelector('.s-use').value.trim().toUpperCase();
+                const cap = group.querySelector('.s-cap').value.trim().toUpperCase();
+                
+                if (group.dataset.index === "1") {
+                    if(!type) { group.querySelector('.s-type').classList.add('error'); storageError = true; }
+                    if(!use) { group.querySelector('.s-use').classList.add('error'); storageError = true; }
+                    if(!cap) { group.querySelector('.s-cap').classList.add('error'); storageError = true; }
+                }
+                
+                if(type || use || cap) { storageUnits.push({ type, use, cap }); }
+            });
+
+            if (storageError) hasError = true;
+            if (hasError) return; 
+
+            const newPc = {
+                id: newId,
+                status: editId ? fullPcDatabase.find(p=>p.id===editId).status : 'green',
+                cpu: document.getElementById('f-cpu').value.trim().toUpperCase(),
+                mobo: document.getElementById('f-mobo').value.trim().toUpperCase(),
+                ram: document.getElementById('f-ram').value.trim().toUpperCase(),
+                gpu: document.getElementById('f-gpu').value.trim().toUpperCase(),
+                storage: storageUnits,
+                mac: document.getElementById('f-mac').value.trim().toUpperCase(),
+                ip: document.getElementById('f-ip').value.trim()
+            };
+
+            try {
+                const response = await fetch('/api/equipos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newPc)
+                });
+                
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    showToast(editId ? `Equipo modificado correctamente` : `Equipo agregado correctamente`);
+                    if (!editId) simularEnvioCorreo('nuevos', 'Se ha registrado un nuevo equipo: ' + newId);
+                    closeModal('modal-form-overlay');
+                    await loadBackendData();
+                    renderInventory();
+                    renderAlerts(); 
+                    if (document.getElementById('view-reportes').classList.contains('active-view')) initReportes();
+                } else {
+                    showToast(data.message || "Error al guardar el equipo");
+                }
+            } catch (err) {
+                console.error(err);
+                showToast("Error al conectar con el servidor.");
+            }
+        }
+
+        function openEditModal(id) {
+            clearFormErrors();
+            const pc = fullPcDatabase.find(p => p.id === id);
+            if(!pc) return;
+
+            document.getElementById('edit-mode-id').value = pc.id;
+            document.getElementById('modal-form-title').innerText = 'MODIFICAR EQUIPO';
+            
+            document.getElementById('f-id').value = pc.id;
+            document.getElementById('f-cpu').value = pc.cpu;
+            document.getElementById('f-mobo').value = pc.mobo;
+            document.getElementById('f-ram').value = pc.ram;
+            document.getElementById('f-gpu').value = pc.gpu;
+            document.getElementById('f-mac').value = pc.mac;
+            document.getElementById('f-ip').value = pc.ip;
+
+            const container = document.getElementById('storage-container');
+            container.innerHTML = '';
+            storageCount = 0;
+
+            if (pc.storage && pc.storage.length > 0) {
+                pc.storage.forEach((unit, idx) => {
+                    if (idx === 0) {
+                        storageCount = 1;
+                        container.innerHTML = `
+                            <div class="storage-unit-group" data-index="1">
+                                <div class="form-grid cols-2" style="margin-bottom: 10px;">
+                                    <label class="form-label">UNIDAD 1 - TIPO</label>
+                                    <div class="form-input-box"><input type="text" class="modal-input s-type" id="f-s1-type" placeholder="TIPO" value="${unit.type}"><span class="error-text">Req.</span></div>
+                                    <label class="form-label">USO</label>
+                                    <div class="form-input-box"><input type="text" class="modal-input s-use" id="f-s1-use" placeholder="USO" value="${unit.use}"><span class="error-text">Req.</span></div>
+                                </div>
+                                <div class="form-grid" style="margin-bottom: 20px;">
+                                    <label class="form-label">CAPACIDAD 1</label>
+                                    <div class="form-input-box"><input type="text" class="modal-input s-cap" id="f-s1-cap" placeholder="(EJ. 1 TB )" value="${unit.cap}"><span class="error-text">Requerido</span></div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        addStorageUnit(unit);
+                    }
+                });
+            } else {
+                storageCount = 1;
+                container.innerHTML = `
+                    <div class="storage-unit-group" data-index="1">
+                        <div class="form-grid cols-2" style="margin-bottom: 10px;">
+                            <label class="form-label">UNIDAD 1 - TIPO</label>
+                            <div class="form-input-box"><input type="text" class="modal-input s-type" id="f-s1-type" placeholder="TIPO" value="${pc.s1Type || ''}"><span class="error-text">Req.</span></div>
+                            <label class="form-label">USO</label>
+                            <div class="form-input-box"><input type="text" class="modal-input s-use" id="f-s1-use" placeholder="USO" value="${pc.s1Use || ''}"><span class="error-text">Req.</span></div>
+                        </div>
+                        <div class="form-grid" style="margin-bottom: 20px;">
+                            <label class="form-label">CAPACIDAD 1</label>
+                            <div class="form-input-box"><input type="text" class="modal-input s-cap" id="f-s1-cap" placeholder="(EJ. 1 TB )" value="${pc.s1Cap || ''}"><span class="error-text">Requerido</span></div>
+                        </div>
+                    </div>
+                `;
+                if(pc.s2Cap) addStorageUnit({type: pc.s2Type, use: pc.s2Use, cap: pc.s2Cap});
+            }
+            document.getElementById('modal-form-overlay').classList.add('show');
+        }
+
+        function openInfoModal(id) {
+            const pc = fullPcDatabase.find(p => p.id === id);
+            if(!pc) return;
+
+            document.getElementById('info-id').innerText = pc.id;
+            document.getElementById('info-cpu').innerText = pc.cpu;
+            document.getElementById('info-mobo').innerText = pc.mobo;
+            document.getElementById('info-ram').innerText = pc.ram;
+            document.getElementById('info-gpu').innerText = pc.gpu;
+            
+            let storageHTML = '';
+            if (pc.storage && pc.storage.length > 0) {
+                pc.storage.forEach((u, i) => {
+                    storageHTML += `<span class="form-label">UNIDAD ${i+1}</span> <span class="info-val">${u.cap} ${u.type} - ${u.use}</span>`;
+                });
+            } else {
+                storageHTML += `<span class="form-label">UNIDAD 1</span> <span class="info-val">${pc.s1Cap} ${pc.s1Type} - ${pc.s1Use}</span>`;
+                if(pc.s2Cap) storageHTML += `<span class="form-label">UNIDAD 2</span> <span class="info-val">${pc.s2Cap} ${pc.s2Type} - ${pc.s2Use}</span>`;
+            }
+            document.getElementById('info-storage-grid').innerHTML = storageHTML;
+            document.getElementById('info-mac').innerText = pc.mac;
+            document.getElementById('info-ip').innerText = pc.ip;
+            document.getElementById('modal-info-overlay').classList.add('show');
+        }
+
+        function openDeleteModal(id) {
+            document.getElementById('delete-target-id').value = id;
+            document.getElementById('delete-display-id').innerText = id;
+            document.getElementById('modal-delete-overlay').classList.add('show');
+        }
+
+        async function confirmDelete() {
+            const id = document.getElementById('delete-target-id').value;
+            try {
+                const response = await fetch(`/api/equipos/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    showToast(`Equipo eliminado correctamente`);
+                    closeModal('modal-delete-overlay');
+                    await loadBackendData();
+                    renderInventory();
+                    renderAlerts();
+                    if (document.getElementById('view-reportes').classList.contains('active-view')) initReportes();
+                } else {
+                    showToast(data.message || "Error al eliminar el equipo");
+                }
+            } catch (err) {
+                console.error(err);
+                showToast("Error al conectar con el servidor.");
+            }
+        }
+
+        function rebindDonutEvents() {
+            const textTop = document.getElementById('donut-text-top');
+            const textBottom = document.getElementById('donut-text-bottom');
+            const originalTop = "equipos";
+            const originalBottom = fullPcDatabase.length;
+            const segments = document.querySelectorAll('.donut-segment');
+
+            segments.forEach(segment => {
+                segment.addEventListener('mouseenter', function() {
+                    textTop.textContent = this.getAttribute('data-desc');
+                    textTop.style.fontFamily = "'Open Sans Hebrew Condensed', sans-serif"; 
+                    textTop.style.fontSize = "13px"; 
+                    textBottom.innerHTML = this.getAttribute('data-title').replace(' ', '<br>');
+                    textBottom.style.fontFamily = "'Oswald', sans-serif"; 
+                    textBottom.style.fontSize = "26px"; 
+                    textBottom.style.lineHeight = "1.1"; 
+                });
+                segment.addEventListener('mouseleave', function() {
+                    textTop.textContent = originalTop;
+                    textTop.style.fontFamily = "'Open Sans Hebrew Condensed', sans-serif"; 
+                    textTop.style.fontSize = "15px"; 
+                    textBottom.innerHTML = originalBottom;
+                    textBottom.style.fontFamily = "'Oswald', sans-serif"; 
+                    textBottom.style.fontSize = "42px"; 
+                    textBottom.style.lineHeight = "1"; 
+                });
+            });
+        }
+
+        const tabs = document.querySelectorAll('.tab');
+        const viewInicio = document.getElementById('view-inicio');
+        const viewListas = document.getElementById('view-listas');
+
+        function renderSimpleList(filter) {
+            viewListas.innerHTML = ''; 
+            let filteredPCs = filter === 'todos' ? fullPcDatabase : fullPcDatabase.filter(pc => pc.status === filter);
+            if (filteredPCs.length === 0) {
+                viewListas.innerHTML = '<p style="text-align: center; color: var(--text-muted); font-style: italic; width: 100%; margin-top: 20px;">No hay equipos para mostrar en esta categoría.</p>';
+                return;
+            }
+            filteredPCs.forEach(pc => {
+                const cardHTML = `
+                    <div class="list-card" style="padding:15px; border-radius:8px;">
+                        <div class="list-pc-info" style="width:70px;">${pcSvgIcon} <span class="list-pc-id">${pc.id}</span></div>
+                        <div class="list-specs">
+                            <span class="spec-label">MOTHERBOARD:</span><span class="spec-value">${pc.mobo || 'N/A'}</span>
+                            <span class="spec-label">CPU:</span><span class="spec-value">${pc.cpu || 'N/A'}</span>
+                        </div>
+                        <div class="list-status-wrapper"><div class="status-pill pill-${pc.status}"></div></div>
+                    </div>
+                `;
+                viewListas.insertAdjacentHTML('beforeend', cardHTML);
+            });
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => { t.classList.remove('active'); t.classList.add('inactive'); });
+                tab.classList.add('active'); tab.classList.remove('inactive');
+                const target = tab.getAttribute('data-target');
+                if (target === 'inicio') {
+                    viewInicio.style.display = 'block'; viewListas.style.display = 'none';
+                } else {
+                    viewInicio.style.display = 'none'; viewListas.style.display = 'flex';
+                    renderSimpleList(target === 'todos' ? 'todos' : target === 'bueno' ? 'green' : target === 'proximo' ? 'yellow' : 'red');
+                }
+            });
+        });
+
+        // ==========================================
+        // LÓGICA DEL BUSCADOR EN TIEMPO REAL
+        // ==========================================
+        function handleLiveSearch(query) {
+            const dropdown = document.getElementById('searchDropdown');
+            dropdown.innerHTML = '';
+            query = query.trim().toLowerCase();
+            
+            if (!query) {
+                dropdown.classList.remove('show');
+                return;
+            }
+
+            const resultados = fullPcDatabase.filter(pc => 
+                pc.id.toLowerCase().includes(query) || 
+                pc.ip.toLowerCase().includes(query) || 
+                pc.mac.toLowerCase().includes(query)
+            );
+
+            if (resultados.length === 0) {
+                dropdown.innerHTML = '<div style="padding: 15px; color: var(--text-muted); text-align: center; font-size: 14px; font-family: \'Oswald\', sans-serif;">NO SE ENCONTRÓ NINGÚN EQUIPO</div>';
+            } else {
+                resultados.slice(0, 5).forEach(pc => { 
+                    const item = document.createElement('div');
+                    item.className = 'dropdown-item';
+                    item.style.flexDirection = 'row';
+                    item.style.alignItems = 'center';
+                    item.style.gap = '15px';
+                    item.style.padding = '12px 15px';
+                    item.style.borderBottom = '1px solid var(--border-color)';
+                    
+                    let statusColor = pc.status === 'red' ? 'var(--critical)' : (pc.status === 'yellow' ? 'var(--warning)' : '#34d399');
+
+                    item.innerHTML = `
+                        <div style="background-color: var(--input-bg); padding: 10px; border-radius: 10px; display: flex; justify-content: center; align-items: center; position: relative; flex-shrink: 0;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--purple-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
+                            <span style="position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; background-color: ${statusColor}; border-radius: 50%; border: 2px solid var(--panel-bg); box-shadow: 0 0 4px rgba(0,0,0,0.2);"></span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 4px; line-height: 1.2;">
+                            <span style="font-size: 16px; font-weight: bold; color: var(--purple-accent); font-family: 'Oswald', sans-serif; letter-spacing: 0.5px; text-transform: uppercase;">${pc.id}</span>
+                            <span style="font-size: 12px; color: var(--text-muted); text-transform: none; font-family: 'Open Sans Hebrew Condensed', sans-serif; letter-spacing: 0.5px; opacity: 0.9;">
+                                <strong>IP:</strong> ${pc.ip} <br> <strong>MAC:</strong> ${pc.mac}
+                            </span>
+                        </div>
+                    `;
+                    
+                    item.onclick = () => goToEquipment(pc.id);
+                    dropdown.appendChild(item);
+                });
+                
+                if(dropdown.lastChild) dropdown.lastChild.style.borderBottom = 'none';
+            }
+            dropdown.classList.add('show');
+        }
+
+        function goToEquipment(id) {
+            document.getElementById('searchDropdown').classList.remove('show');
+            document.getElementById('main-search-input').value = '';
+
+            switchMainView('inventario');
+            
+            document.querySelectorAll('.sidebar .menu-item').forEach(i => i.classList.remove('active-menu'));
+            const invBtn = document.querySelector('.sidebar .menu-item[onclick*="inventario"]');
+            if (invBtn) invBtn.classList.add('active-menu');
+
+            setTimeout(() => {
+                const tarjetaPC = document.getElementById('card-' + id);
+                if (tarjetaPC) {
+                    tarjetaPC.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    tarjetaPC.classList.add('highlight-glow');
+                    setTimeout(() => tarjetaPC.classList.remove('highlight-glow'), 2500);
+                }
+            }, 150); 
+        }
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script>
+    <script>
+        // Inicializar Calendario Custom (Flatpickr)
+        flatpickr("#rep-date-from", { locale: "es", dateFormat: "Y-m-d" });
+        flatpickr("#rep-date-to", { locale: "es", dateFormat: "Y-m-d" });
+        
+        // Funciones de Loader (Expuestas Globalmente)
+        function showLoader(msg = "CARGANDO...") {
+            document.querySelector('.loader-text').innerText = msg;
+            document.getElementById('global-loader').classList.add('show');
+        }
+        function hideLoader() {
+            document.getElementById('global-loader').classList.remove('show');
+        }
+    </script>
+</body>
+</html>
